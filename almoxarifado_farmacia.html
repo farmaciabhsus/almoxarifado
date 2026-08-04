@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Almoxarifado de Farmácia</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --danger: #dc2626;
+            --info: #0891b2;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-800);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--gray-900);
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--gray-600);
+            transition: all 0.2s;
+        }
+
+        .nav-tab:hover {
+            background: var(--gray-50);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #15803d;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--gray-700);
+            font-size: 0.875rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        th {
+            background: var(--gray-50);
+            font-weight: 600;
+            color: var(--gray-700);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background: var(--gray-50);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-critical { background: #fef2f2; color: var(--danger); }
+        .status-warning { background: #fffbeb; color: var(--warning); }
+        .status-success { background: #f0fdf4; color: var(--success); }
+        .status-info { background: #ecfeff; color: var(--info); }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .help-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--gray-300);
+            color: var(--gray-600);
+            font-size: 0.625rem;
+            font-weight: 600;
+            cursor: help;
+            margin-left: 4px;
+        }
+
+        .help-icon:hover::after {
+            content: attr(data-help);
+            position: absolute;
+            background: var(--gray-800);
+            color: white;
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            max-width: 300px;
+            z-index: 100;
+            margin-left: 8px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-500);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border-radius: 9999px;
+            border: 1px solid var(--gray-300);
+            background: white;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .autosave-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: var(--gray-800);
+            color: white;
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .autosave-indicator.visible {
+            opacity: 1;
+        }
+
+        .draft-banner {
+            background: var(--warning);
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .draft-banner.visible {
+            display: block;
+        }
+
+        .digest-banner {
+            background: var(--info);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .digest-banner.visible {
+            display: block;
+        }
+
+        .chip-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            background: var(--gray-100);
+            cursor: help;
+        }
+
+        .chip-status:hover {
+            background: var(--gray-200);
+        }
+
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip:hover::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gray-800);
+            color: white;
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 100;
+            margin-bottom: 4px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-4 { margin-top: 16px; }
+        .mb-4 { margin-bottom: 16px; }
+        .flex { display: flex; }
+        .gap-2 { gap: 8px; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            .card {
+                box-shadow: none;
+                border: 1px solid var(--gray-200);
+            }
+            body {
+                background: white;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .nav-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="draft-banner" id="draftBanner">
+        ⚠️ Você tem um rascunho não salvo. Continue de onde parou.
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>📦 Sistema de Gestão de Almoxarifado de Farmácia</h1>
+            <p>Controle de estoque de insumos assistenciais • ~350 itens • ~38.000 atendimentos/mês</p>
+        </header>
+
+        <div class="digest-banner" id="digestBanner"></div>
+
+        <nav class="nav-tabs no-print">
+            <button class="nav-tab active" data-tab="dashboard">📊 Painel</button>
+            <button class="nav-tab" data-tab="import">📥 Importar Dados</button>
+            <button class="nav-tab" data-tab="items">📋 Itens Cadastrados</button>
+            <button class="nav-tab" data-tab="order">🛒 Gerar Pedido</button>
+            <button class="nav-tab" data-tab="reports">📈 Relatórios</button>
+            <button class="nav-tab" data-tab="settings">⚙️ Configurações</button>
+        </nav>
+
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="tab-content">
+            <div class="card mb-4">
+                <h2 class="card-title">
+                    <span class="step-badge">1</span>
+                    Fluxo de Uso
+                </h2>
+                <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <strong>1. Importar estoque de hoje</strong>
+                        <p style="color: var(--gray-500); font-size: 0.875rem;">Carregue o CSV diário de posição de estoque</p>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <strong>2. Conferir sinalizações</strong>
+                        <p style="color: var(--gray-500); font-size: 0.875rem;">Verifique itens críticos e em risco</p>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <strong>3. Gerar pedido</strong>
+                        <p style="color: var(--gray-500); font-size: 0.875rem;">Revise e ajuste quantidades sugeridas</p>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <strong>4. Exportar</strong>
+                        <p style="color: var(--gray-500); font-size: 0.875rem;">Imprima ou exporte o pedido consolidado</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="stat-card" onclick="applyFilter('status', 'critical')">
+                    <div class="stat-value" id="statCritical" style="color: var(--danger)">0</div>
+                    <div class="stat-label">🔴 Críticos</div>
+                </div>
+                <div class="stat-card" onclick="applyFilter('status', 'warning')">
+                    <div class="stat-value" id="statWarning" style="color: var(--warning)">0</div>
+                    <div class="stat-label">🟡 Atenção</div>
+                </div>
+                <div class="stat-card" onclick="applyFilter('status', 'success')">
+                    <div class="stat-value" id="statAdequate" style="color: var(--success)">0</div>
+                    <div class="stat-label">🟢 Adequados</div>
+                </div>
+                <div class="stat-card" onclick="applyFilter('status', 'excess')">
+                    <div class="stat-value" id="statExcess" style="color: var(--info)">0</div>
+                    <div class="stat-label">🔵 Excesso</div>
+                </div>
+                <div class="stat-card" onclick="applyFilter('validity', 'risk')">
+                    <div class="stat-value" id="statValidityRisk" style="color: #f97316">0</div>
+                    <div class="stat-label">🟠 Risco Validade</div>
+                </div>
+                <div class="stat-card" onclick="applyFilter('blocked', 'true')">
+                    <div class="stat-value" id="statBlocked" style="color: var(--gray-700)">0</div>
+                    <div class="stat-label">⚫ Bloqueados</div>
+                </div>
+                <div class="stat-card" onclick="applyFilter('missing', 'true')">
+                    <div class="stat-value" id="statMissing" style="color: var(--danger)">0</div>
+                    <div class="stat-label">❌ Em Falta</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Total de Itens</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statTermolabil">0</div>
+                    <div class="stat-label">Termolábil</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statTermoestavel">0</div>
+                    <div class="stat-label">Termoestável</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statControlado">0</div>
+                    <div class="stat-label">Controlado</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- IMPORTAR DADOS -->
+        <section id="import" class="tab-content hidden">
+            <div class="card">
+                <h2 class="card-title">📥 Importação de Dados</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        Tipo de Importação
+                        <span class="help-icon" data-help="Selecione o tipo de arquivo que deseja importar">?</span>
+                    </label>
+                    <select class="form-select" id="importType" onchange="updateImportTemplate()">
+                        <option value="stock">Posição de Estoque (diário)</option>
+                        <option value="consumption">Consumo/Atendimentos (mensal)</option>
+                        <option value="items">Cadastro de Itens</option>
+                        <option value="backup">Backup Completo (JSON)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Arquivo CSV/JSON</label>
+                    <input type="file" class="form-input" id="importFile" accept=".csv,.json">
+                </div>
+
+                <div class="flex gap-2 mb-4">
+                    <button class="btn btn-primary" onclick="processImport()">Importar Arquivo</button>
+                    <button class="btn btn-secondary" onclick="downloadTemplate()">Baixar Modelo</button>
+                </div>
+
+                <div id="importPreview" class="hidden">
+                    <h3 style="margin-bottom: 12px;">Pré-visualização da Importação</h3>
+                    <div class="table-container">
+                        <table id="importPreviewTable">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 flex gap-2">
+                        <button class="btn btn-success" onclick="confirmImport()">Confirmar Importação</button>
+                        <button class="btn btn-secondary" onclick="cancelImport()">Cancelar</button>
+                    </div>
+                </div>
+
+                <div id="importErrors" class="hidden" style="background: #fef2f2; padding: 16px; border-radius: var(--radius); margin-top: 16px;">
+                    <h4 style="color: var(--danger); margin-bottom: 8px;">⚠️ Erros/Inconsistências Encontradas</h4>
+                    <ul id="importErrorsList" style="padding-left: 20px;"></ul>
+                </div>
+
+                <div class="mt-4">
+                    <h3 style="margin-bottom: 12px;">📜 Histórico de Importações</h3>
+                    <div class="table-container">
+                        <table id="importHistoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Itens</th>
+                                    <th>Origem</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ITENS CADASTRADOS -->
+        <section id="items" class="tab-content hidden">
+            <div class="card">
+                <h2 class="card-title">📋 Itens Cadastrados</h2>
+                
+                <div class="search-bar">
+                    <input type="text" class="form-input" id="itemSearch" placeholder="Buscar por nome ou código..." oninput="renderItemsTable()">
+                    <select class="form-select" id="itemCategoryFilter" onchange="renderItemsTable()" style="max-width: 200px;">
+                        <option value="">Todas as Categorias</option>
+                        <option value="termolabil">Termolábil</option>
+                        <option value="termoestavel">Termoestável</option>
+                        <option value="controlado">Controlado</option>
+                    </select>
+                    <select class="form-select" id="itemStatusFilter" onchange="renderItemsTable()" style="max-width: 200px;">
+                        <option value="">Todos os Status</option>
+                        <option value="critical">🔴 Crítico</option>
+                        <option value="warning">🟡 Atenção</option>
+                        <option value="success">🟢 Adequado</option>
+                        <option value="excess">🔵 Excesso</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-2 mb-4">
+                    <button class="btn btn-primary" onclick="openItemModal()">+ Novo Item</button>
+                    <button class="btn btn-secondary" onclick="exportItemsCSV()">Exportar CSV</button>
+                </div>
+
+                <div class="table-container" style="max-height: 600px; overflow-y: auto;">
+                    <table id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nome</th>
+                                <th>Categoria</th>
+                                <th>Unid.</th>
+                                <th>Estoque Atual</th>
+                                <th>Mín/Máx</th>
+                                <th>CMM</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- GERAR PEDIDO -->
+        <section id="order" class="tab-content hidden">
+            <div class="card">
+                <h2 class="card-title">🛒 Gerar Pedido Sugerido</h2>
+                
+                <div class="flex gap-2 items-center justify-between mb-4 flex-wrap">
+                    <div class="flex gap-2 items-center flex-wrap">
+                        <button class="btn btn-success" onclick="acceptAllSuggestions()">✓ Aceitar Tudo</button>
+                        <button class="btn btn-primary" onclick="openItemPicker()">+ Adicionar Item</button>
+                        <button class="btn btn-secondary" onclick="exportOrderCSV()">Exportar Pedido</button>
+                        <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir</button>
+                    </div>
+                    <div class="flex gap-2 items-center flex-wrap">
+                        <label class="form-label" style="margin: 0;">Data Entrega Frio:</label>
+                        <input type="date" class="form-input" id="deliveryDateCold" style="max-width: 150px;">
+                        <label class="form-label" style="margin: 0;">Data Entrega Ambiente:</label>
+                        <input type="date" class="form-input" id="deliveryDateAmbient" style="max-width: 150px;">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all" onclick="filterOrder('all')">Todos</button>
+                    <button class="filter-btn" data-filter="critical" onclick="filterOrder('critical')">🔴 Críticos</button>
+                    <button class="filter-btn" data-filter="warning" onclick="filterOrder('warning')">🟡 Atenção</button>
+                    <button class="filter-btn" data-filter="missing" onclick="filterOrder('missing')">❌ Em Falta</button>
+                    <button class="filter-btn" data-filter="selected" onclick="filterOrder('selected')">Selecionados</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="orderTable">
+                        <thead>
+                            <tr>
+                                <th>Selecionar</th>
+                                <th>Código</th>
+                                <th>Nome</th>
+                                <th>Categoria</th>
+                                <th>Estoque Útil</th>
+                                <th>CMM</th>
+                                <th>Sugerido</th>
+                                <th>Pedido (editável)</th>
+                                <th>Margem</th>
+                                <th>Responsável</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4" style="background: var(--gray-50); padding: 16px; border-radius: var(--radius);">
+                    <h4 style="margin-bottom: 12px;">📊 Resumo do Pedido</h4>
+                    <div id="orderSummary"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RELATÓRIOS -->
+        <section id="reports" class="tab-content hidden">
+            <div class="card">
+                <h2 class="card-title">📈 Relatórios e Indicadores</h2>
+                
+                <div class="filter-group mb-4">
+                    <button class="filter-btn active" data-report="missing" onclick="showReport('missing')">Em Falta</button>
+                    <button class="filter-btn" data-report="blocked" onclick="showReport('blocked')">Bloqueados</button>
+                    <button class="filter-btn" data-report="rupture" onclick="showReport('rupture')">Risco de Ruptura</button>
+                    <button class="filter-btn" data-report="validity" onclick="showReport('validity')">Risco de Validade</button>
+                    <button class="filter-btn" data-report="excess" onclick="showReport('excess')">Excesso</button>
+                    <button class="filter-btn" data-report="history" onclick="showReport('history')">Histórico por Item</button>
+                </div>
+
+                <div class="flex gap-2 mb-4">
+                    <select class="form-select" id="reportCategoryFilter" onchange="renderCurrentReport()" style="max-width: 200px;">
+                        <option value="">Todas as Categorias</option>
+                        <option value="termolabil">Termolábil</option>
+                        <option value="termoestavel">Termoestável</option>
+                        <option value="controlado">Controlado</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="exportCurrentReport()">Exportar CSV</button>
+                    <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir</button>
+                </div>
+
+                <div id="reportContent">
+                    <div class="table-container">
+                        <table id="reportTable">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONFIGURAÇÕES -->
+        <section id="settings" class="tab-content hidden">
+            <div class="card">
+                <h2 class="card-title">⚙️ Configurações</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        Cobertura-alvo (meses)
+                        <span class="help-icon" data-help="Quantos meses de estoque você deseja manter como meta">?</span>
+                    </label>
+                    <input type="number" class="form-input" id="configCoverage" value="1" step="0.5" min="0.5" onchange="saveSettings()">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Limite crítico de falta (%)
+                        <span class="help-icon" data-help="Percentual do CMM abaixo do qual o item é considerado em situação de falta">?</span>
+                    </label>
+                    <input type="number" class="form-input" id="configCriticalLimit" value="10" step="5" min="0" max="100" onchange="saveSettings()">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Janela de validade (dias)
+                        <span class="help-icon" data-help="Número de dias para considerar risco de validade">?</span>
+                    </label>
+                    <input type="number" class="form-input" id="configValidityWindow" value="90" step="30" min="30" onchange="saveSettings()">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Fator de tolerância de excesso (%)
+                        <span class="help-icon" data-help="Percentual acima da cobertura-alvo para sinalizar excesso">?</span>
+                    </label>
+                    <input type="number" class="form-input" id="configExcessFactor" value="150" step="10" min="100" onchange="saveSettings()">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Margem para itens em falta (%)
+                        <span class="help-icon" data-help="Margem adicional aplicada ao CMM para itens em situação de falta">?</span>
+                    </label>
+                    <input type="number" class="form-input" id="configMarginMissing" value="30" step="5" min="0" onchange="saveSettings()">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Margem para itens normais (%)
+                        <span class="help-icon" data-help="Margem adicional aplicada ao CMM para itens sem falta">?</span>
+                    </label>
+                    <input type="number" class="form-input" id="configMarginNormal" value="20" step="5" min="0" onchange="saveSettings()">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Retenção do histórico (meses)
+                        <span class="help-icon" data-help="Quantos meses de histórico de estoque manter no localStorage">?</span>
+                    </label>
+                    <input type="number" class="form-input" id="configHistoryRetention" value="12" step="1" min="1" max="24" onchange="saveSettings()">
+                </div>
+
+                <div class="mt-4">
+                    <h3 style="margin-bottom: 12px;">💾 Backup e Restauração</h3>
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="btn btn-primary" onclick="exportFullBackup()">Exportar Backup Completo (JSON)</button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('backupFile').click()">Importar Backup</button>
+                        <input type="file" id="backupFile" accept=".json" class="hidden" onchange="importFullBackup(event)">
+                        <button class="btn btn-danger" onclick="clearAllData()">Limpar Todos os Dados</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODAL DE ITEM -->
+    <div class="modal-overlay" id="itemModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="itemModalTitle">Novo Item</h3>
+                <button class="modal-close" onclick="closeItemModal()">&times;</button>
+            </div>
+            <form id="itemForm" onsubmit="saveItem(event)">
+                <input type="hidden" id="itemId">
+                <div class="form-group">
+                    <label class="form-label">Código *</label>
+                    <input type="text" class="form-input" id="itemCode" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nome *</label>
+                    <input type="text" class="form-input" id="itemName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Categoria *</label>
+                    <select class="form-select" id="itemCategory" required>
+                        <option value="termolabil">Termolábil</option>
+                        <option value="termoestavel">Termoestável</option>
+                        <option value="controlado">Controlado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Unidade de Medida</label>
+                    <input type="text" class="form-input" id="itemUnit" placeholder="ex: CX, AMP, FR">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estoque Mínimo</label>
+                    <input type="number" class="form-input" id="itemMinStock" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estoque Máximo</label>
+                    <input type="number" class="form-input" id="itemMaxStock" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Saldo a Receber</label>
+                    <input type="number" class="form-input" id="itemOnOrder" value="0" min="0">
+                </div>
+                <div id="controlledFields" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Lote</label>
+                        <input type="text" class="form-input" id="itemBatch">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Validade</label>
+                        <input type="date" class="form-input" id="itemExpiry">
+                    </div>
+                </div>
+                <div class="flex gap-2 justify-between mt-4">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeItemModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE BLOQUEIO -->
+    <div class="modal-overlay" id="blockModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="blockModalTitle">Gerenciar Bloqueio</h3>
+                <button class="modal-close" onclick="closeBlockModal()">&times;</button>
+            </div>
+            <form id="blockForm" onsubmit="saveBlock(event)">
+                <input type="hidden" id="blockItemId">
+                <input type="hidden" id="blockBatchId">
+                <div class="form-group">
+                    <label class="form-label">Item</label>
+                    <input type="text" class="form-input" id="blockItemName" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ação</label>
+                    <select class="form-select" id="blockAction" onchange="toggleBlockFields()">
+                        <option value="block">Bloquear</option>
+                        <option value="unblock">Desbloquear</option>
+                    </select>
+                </div>
+                <div id="blockFields">
+                    <div class="form-group">
+                        <label class="form-label">Motivo *</label>
+                        <select class="form-select" id="blockReason" required>
+                            <option value="">Selecione...</option>
+                            <option value="DANIFICADO_POR_ARMAZENAMENTO">Danificado por Armazenamento</option>
+                            <option value="DESVIO_DE_QUALIDADE">Desvio de Qualidade</option>
+                            <option value="QUARENTENA">Quarentena</option>
+                            <option value="RESERVADO">Reservado</option>
+                            <option value="VENCIDO">Vencido</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantidade *</label>
+                        <input type="number" class="form-input" id="blockQuantity" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Lote/Validade (opcional)</label>
+                        <input type="text" class="form-input" id="blockBatch" placeholder="ex: LOTE123 - 12/2025">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Feito por *</label>
+                    <input type="text" class="form-input" id="blockResponsible" required>
+                </div>
+                <div class="flex gap-2 justify-between mt-4">
+                    <button type="submit" class="btn btn-primary">Confirmar</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeBlockModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE PICKER -->
+    <div class="modal-overlay" id="pickerModal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Adicionar Itens ao Pedido</h3>
+                <button class="modal-close" onclick="closePickerModal()">&times;</button>
+            </div>
+            <div class="search-bar">
+                <input type="text" class="form-input" id="pickerSearch" placeholder="Buscar por nome ou código..." oninput="renderPickerItems()">
+                <select class="form-select" id="pickerCategory" onchange="renderPickerItems()" style="max-width: 150px;">
+                    <option value="">Todas</option>
+                    <option value="termolabil">Termolábil</option>
+                    <option value="termoestavel">Termoestável</option>
+                    <option value="controlado">Controlado</option>
+                </select>
+            </div>
+            <div class="table-container" style="max-height: 400px;">
+                <table id="pickerTable">
+                    <thead>
+                        <tr>
+                            <th>Selecionar</th>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Categoria</th>
+                            <th>Estoque</th>
+                            <th>CMM</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="flex gap-2 justify-between mt-4">
+                <button class="btn btn-primary" onclick="addSelectedToOrder()">Adicionar Selecionados</button>
+                <button class="btn btn-secondary" onclick="closePickerModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE PERDA -->
+    <div class="modal-overlay" id="lossModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Registrar Perda</h3>
+                <button class="modal-close" onclick="closeLossModal()">&times;</button>
+            </div>
+            <form id="lossForm" onsubmit="saveLoss(event)">
+                <input type="hidden" id="lossItemId">
+                <div class="form-group">
+                    <label class="form-label">Item</label>
+                    <input type="text" class="form-input" id="lossItemName" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Quantidade *</label>
+                    <input type="number" class="form-input" id="lossQuantity" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Motivo *</label>
+                    <select class="form-select" id="lossReason" required>
+                        <option value="">Selecione...</option>
+                        <option value="VENCIMENTO">Vencimento</option>
+                        <option value="AVARIA">Avaria</option>
+                        <option value="OUTRO">Outro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Feito por *</label>
+                    <input type="text" class="form-input" id="lossResponsible" required>
+                </div>
+                <div class="flex gap-2 justify-between mt-4">
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeLossModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="autosave-indicator" id="autosaveIndicator">💾 Salvo automaticamente</div>
+
+    <script>
+        // ==================== ESTADO DA APLICAÇÃO ====================
+        let appState = {
+            items: [],
+            stockHistory: [],
+            consumptionHistory: [],
+            importHistory: [],
+            orderItems: [],
+            blocks: [],
+            losses: [],
+            settings: {
+                coverage: 1,
+                criticalLimit: 10,
+                validityWindow: 90,
+                excessFactor: 150,
+                marginMissing: 30,
+                marginNormal: 20,
+                historyRetention: 12
+            },
+            lastSnapshot: null
+        };
+
+        let pendingImport = null;
+        let currentReport = 'missing';
+
+        // ==================== INICIALIZAÇÃO ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromLocalStorage();
+            setupNavigation();
+            updateDashboard();
+            showDigest();
+            renderItemsTable();
+            renderOrderTable();
+            renderImportHistory();
+            loadSettings();
+            
+            // Auto-save periódico
+            setInterval(autoSave, 30000);
+        });
+
+        function setupNavigation() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.dataset.tab;
+                    
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    document.getElementById(targetTab).classList.remove('hidden');
+                    
+                    if (targetTab === 'dashboard') updateDashboard();
+                    if (targetTab === 'items') renderItemsTable();
+                    if (targetTab === 'order') renderOrderTable();
+                    if (targetTab === 'reports') renderCurrentReport();
+                });
+            });
+        }
+
+        // ==================== PERSISTÊNCIA ====================
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('almoxarifadoFarmacia');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    appState = { ...appState, ...parsed };
+                    document.getElementById('draftBanner').classList.add('visible');
+                } catch (e) {
+                    console.error('Erro ao carregar dados:', e);
+                }
+            }
+            // Criar snapshot para comparação no digest
+            appState.lastSnapshot = createSnapshot();
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('almoxarifadoFarmacia', JSON.stringify(appState));
+            showAutosaveIndicator();
+            document.getElementById('draftBanner').classList.remove('visible');
+        }
+
+        function autoSave() {
+            saveToLocalStorage();
+        }
+
+        function showAutosaveIndicator() {
+            const indicator = document.getElementById('autosaveIndicator');
+            indicator.classList.add('visible');
+            setTimeout(() => indicator.classList.remove('visible'), 2000);
+        }
+
+        function createSnapshot() {
+            return {
+                itemsCount: appState.items.length,
+                criticalCount: countByStatus('critical'),
+                warningCount: countByStatus('warning'),
+                missingCount: countMissing(),
+                validityRiskCount: countValidityRisk(),
+                blockedCount: countBlocked()
+            };
+        }
+
+        function showDigest() {
+            const current = createSnapshot();
+            const last = appState.lastSnapshot;
+            
+            if (!last) return;
+            
+            const changes = [];
+            
+            const missingDiff = current.missingCount - last.missingCount;
+            if (missingDiff > 0) changes.push(`${missingDiff} ${missingDiff === 1 ? 'item entrou' : 'itens entraram'} em falta`);
+            else if (missingDiff < 0) changes.push(`${Math.abs(missingDiff)} ${Math.abs(missingDiff) === 1 ? 'item saiu' : 'itens saíram'} de falta`);
+            
+            const validityDiff = current.validityRiskCount - last.validityRiskCount;
+            if (validityDiff < 0) changes.push(`${Math.abs(validityDiff)} ${Math.abs(validityDiff) === 1 ? 'item saiu' : 'itens saíram'} do risco de validade`);
+            
+            const criticalDiff = current.criticalCount - last.criticalCount;
+            if (criticalDiff > 0) changes.push(`${criticalDiff} ${criticalDiff === 1 ? 'item ficou' : 'itens ficaram'} críticos`);
+            
+            if (changes.length > 0) {
+                const banner = document.getElementById('digestBanner');
+                banner.innerHTML = '<strong>📋 Resumo desde o último acesso:</strong> ' + changes.join(', ');
+                banner.classList.add('visible');
+                setTimeout(() => banner.classList.remove('visible'), 10000);
+            }
+        }
+
+        // ==================== CÁLCULOS ====================
+        function calculateCMM(itemCode) {
+            const consumptions = appState.consumptionHistory.filter(c => c.code === itemCode);
+            if (consumptions.length === 0) return 0;
+            
+            const total = consumptions.reduce((sum, c) => sum + (parseFloat(c.quantity) || 0), 0);
+            return total / Math.min(consumptions.length, 3);
+        }
+
+        function getUsefulStock(item) {
+            const totalStock = parseFloat(item.currentStock) || 0;
+            const blockedStock = getBlockedQuantity(item.code);
+            
+            // Calcular lotes que vencem antes do fim da cobertura
+            const coverageEnd = new Date();
+            coverageEnd.setMonth(coverageEnd.getMonth() + appState.settings.coverage);
+            
+            let expiringStock = 0;
+            if (item.batches && item.batches.length > 0) {
+                item.batches.forEach(batch => {
+                    if (batch.expiry && new Date(batch.expiry) < coverageEnd) {
+                        expiringStock += parseFloat(batch.quantity) || 0;
+                    }
+                });
+            }
+            
+            return Math.max(0, totalStock - blockedStock - expiringStock);
+        }
+
+        function getBlockedQuantity(itemCode) {
+            return appState.blocks
+                .filter(b => b.itemCode === itemCode && b.action === 'block')
+                .reduce((sum, b) => sum + (parseFloat(b.quantity) || 0), 0);
+        }
+
+        function isItemMissing(item) {
+            const usefulStock = getUsefulStock(item);
+            const cmm = calculateCMM(item.code);
+            const criticalLimit = (cmm * appState.settings.criticalLimit) / 100;
+            return usefulStock <= criticalLimit;
+        }
+
+        function getItemStatus(item) {
+            const usefulStock = getUsefulStock(item);
+            const cmm = calculateCMM(item.code);
+            const coverage = appState.settings.coverage;
+            const excessFactor = appState.settings.excessFactor / 100;
+            
+            if (usefulStock === 0 || isItemMissing(item)) return 'critical';
+            
+            const projectedDemand = cmm * coverage;
+            const onOrder = parseFloat(item.onOrder) || 0;
+            const totalAvailable = usefulStock + onOrder;
+            
+            if (totalAvailable < projectedDemand * 0.5) return 'critical';
+            if (totalAvailable < projectedDemand) return 'warning';
+            if (totalAvailable > projectedDemand * excessFactor) return 'excess';
+            return 'success';
+        }
+
+        function getValidityRisk(item) {
+            if (!item.batches || item.batches.length === 0) return 'none';
+            
+            const cmmDaily = calculateCMM(item.code) / 30;
+            const validityWindow = appState.settings.validityWindow;
+            const windowEnd = new Date();
+            windowEnd.setDate(windowEnd.getDate() + validityWindow);
+            
+            let expiringQty = 0;
+            item.batches.forEach(batch => {
+                if (batch.expiry && new Date(batch.expiry) <= windowEnd) {
+                    expiringQty += parseFloat(batch.quantity) || 0;
+                }
+            });
+            
+            if (expiringQty === 0) return 'none';
+            
+            const consumptionUntilExpiry = cmmDaily * validityWindow;
+            const riskRatio = expiringQty / (consumptionUntilExpiry || 1);
+            
+            if (riskRatio > 2) return 'high';
+            if (riskRatio > 1) return 'medium';
+            return 'low';
+        }
+
+        function calculateSuggestedQuantity(item) {
+            const cmm = calculateCMM(item.code);
+            const usefulStock = getUsefulStock(item);
+            const onOrder = parseFloat(item.onOrder) || 0;
+            const isMissing = isItemMissing(item);
+            
+            const margin = isMissing ? appState.settings.marginMissing : appState.settings.marginNormal;
+            const marginQty = (cmm * margin) / 100;
+            
+            const suggested = Math.max(0, cmm - usefulStock - onOrder + marginQty);
+            return Math.round(suggested);
+        }
+
+        function calculateRuptureDate(item) {
+            const usefulStock = getUsefulStock(item);
+            const cmm = calculateCMM(item.code);
+            
+            if (cmm === 0 || usefulStock === 0) return null;
+            
+            const cmmDaily = cmm / 30;
+            const daysUntilRupture = usefulStock / cmmDaily;
+            
+            const ruptureDate = new Date();
+            ruptureDate.setDate(ruptureDate.getDate() + Math.round(daysUntilRupture));
+            return ruptureDate;
+        }
+
+        // ==================== DASHBOARD ====================
+        function updateDashboard() {
+            document.getElementById('statCritical').textContent = countByStatus('critical');
+            document.getElementById('statWarning').textContent = countByStatus('warning');
+            document.getElementById('statAdequate').textContent = countByStatus('success');
+            document.getElementById('statExcess').textContent = countByStatus('excess');
+            document.getElementById('statValidityRisk').textContent = countValidityRisk();
+            document.getElementById('statBlocked').textContent = countBlocked();
+            document.getElementById('statMissing').textContent = countMissing();
+            document.getElementById('statTotal').textContent = appState.items.length;
+            
+            document.getElementById('statTermolabil').textContent = countByCategory('termolabil');
+            document.getElementById('statTermoestavel').textContent = countByCategory('termoestavel');
+            document.getElementById('statControlado').textContent = countByCategory('controlado');
+        }
+
+        function countByStatus(status) {
+            return appState.items.filter(item => getItemStatus(item) === status).length;
+        }
+
+        function countByCategory(category) {
+            return appState.items.filter(item => item.category === category).length;
+        }
+
+        function countMissing() {
+            return appState.items.filter(item => isItemMissing(item)).length;
+        }
+
+        function countValidityRisk() {
+            return appState.items.filter(item => getValidityRisk(item) !== 'none').length;
+        }
+
+        function countBlocked() {
+            const blockedCodes = new Set(appState.blocks.filter(b => b.action === 'block').map(b => b.itemCode));
+            return blockedCodes.size;
+        }
+
+        function applyFilter(type, value) {
+            document.querySelector('[data-tab="items"]').click();
+            
+            if (type === 'status') {
+                document.getElementById('itemStatusFilter').value = value;
+            } else if (type === 'validity') {
+                // Filtrar por risco de validade na tela de relatórios
+                document.querySelector('[data-tab="reports"]').click();
+                showReport('validity');
+            } else if (type === 'blocked') {
+                document.querySelector('[data-tab="reports"]').click();
+                showReport('blocked');
+            } else if (type === 'missing') {
+                document.querySelector('[data-tab="reports"]').click();
+                showReport('missing');
+            }
+            
+            renderItemsTable();
+        }
+
+        // ==================== ITENS ====================
+        function renderItemsTable() {
+            const tbody = document.querySelector('#itemsTable tbody');
+            const search = document.getElementById('itemSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('itemCategoryFilter').value;
+            const statusFilter = document.getElementById('itemStatusFilter').value;
+            
+            let filtered = appState.items.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(search) || 
+                                     item.code.toLowerCase().includes(search);
+                const matchesCategory = !categoryFilter || item.category === categoryFilter;
+                const matchesStatus = !statusFilter || getItemStatus(item) === statusFilter;
+                return matchesSearch && matchesCategory && matchesStatus;
+            });
+            
+            // Ordenar por criticidade
+            const statusOrder = { critical: 0, warning: 1, success: 2, excess: 3 };
+            filtered.sort((a, b) => statusOrder[getItemStatus(a)] - statusOrder[getItemStatus(b)]);
+            
+            tbody.innerHTML = filtered.map(item => {
+                const status = getItemStatus(item);
+                const statusLabels = { critical: '🔴 Crítico', warning: '🟡 Atenção', success: '🟢 Adequado', excess: '🔵 Excesso' };
+                const cmm = calculateCMM(item.code);
+                const validityRisk = getValidityRisk(item);
+                const blocked = getBlockedQuantity(item.code) > 0;
+                
+                let chipContent = statusLabels[status];
+                if (validityRisk !== 'none') {
+                    chipContent += ' | ' + (validityRisk === 'high' ? '🔴' : validityRisk === 'medium' ? '🟠' : '🟢') + ' Validade';
+                }
+                if (blocked) {
+                    chipContent += ' | ⚫ Bloqueado';
+                }
+                
+                return `
+                    <tr>
+                        <td>${item.code}</td>
+                        <td>${item.name}</td>
+                        <td>${getCategoryLabel(item.category)}</td>
+                        <td>${item.unit || '-'}</td>
+                        <td>${item.currentStock || 0}</td>
+                        <td>${item.minStock}/${item.maxStock}</td>
+                        <td>${cmm.toFixed(1)}</td>
+                        <td><span class="chip-status" data-tooltip="${buildChipTooltip(item)}">${chipContent}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" onclick="editItem('${item.code}')">✏️</button>
+                            <button class="btn btn-sm btn-secondary" onclick="openBlockModalFor('${item.code}')">🚫</button>
+                            <button class="btn btn-sm btn-secondary" onclick="openLossModalFor('${item.code}')">📉</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function buildChipTooltip(item) {
+            const parts = [];
+            const status = getItemStatus(item);
+            const validityRisk = getValidityRisk(item);
+            const blockedQty = getBlockedQuantity(item.code);
+            
+            parts.push(`Nível: ${status.toUpperCase()}`);
+            if (validityRisk !== 'none') parts.push(`Validade: ${validityRisk.toUpperCase()}`);
+            if (blockedQty > 0) parts.push(`Bloqueado: ${blockedQty}`);
+            
+            return parts.join(' • ');
+        }
+
+        function getCategoryLabel(category) {
+            const labels = { termolabil: 'Termolábil', termoestavel: 'Termoestável', controlado: 'Controlado' };
+            return labels[category] || category;
+        }
+
+        function openItemModal() {
+            document.getElementById('itemModalTitle').textContent = 'Novo Item';
+            document.getElementById('itemForm').reset();
+            document.getElementById('itemId').value = '';
+            document.getElementById('itemModal').classList.add('active');
+        }
+
+        function closeItemModal() {
+            document.getElementById('itemModal').classList.remove('active');
+        }
+
+        function editItem(code) {
+            const item = appState.items.find(i => i.code === code);
+            if (!item) return;
+            
+            document.getElementById('itemModalTitle').textContent = 'Editar Item';
+            document.getElementById('itemId').value = item.code;
+            document.getElementById('itemCode').value = item.code;
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemCategory').value = item.category;
+            document.getElementById('itemUnit').value = item.unit || '';
+            document.getElementById('itemMinStock').value = item.minStock || 0;
+            document.getElementById('itemMaxStock').value = item.maxStock || 0;
+            document.getElementById('itemOnOrder').value = item.onOrder || 0;
+            
+            toggleControlledFields(item.category);
+            document.getElementById('itemModal').classList.add('active');
+        }
+
+        function saveItem(event) {
+            event.preventDefault();
+            
+            const code = document.getElementById('itemCode').value;
+            const existingIndex = appState.items.findIndex(i => i.code === code);
+            
+            const item = {
+                code: code,
+                name: document.getElementById('itemName').value,
+                category: document.getElementById('itemCategory').value,
+                unit: document.getElementById('itemUnit').value,
+                minStock: parseInt(document.getElementById('itemMinStock').value) || 0,
+                maxStock: parseInt(document.getElementById('itemMaxStock').value) || 0,
+                onOrder: parseInt(document.getElementById('itemOnOrder').value) || 0,
+                currentStock: existingIndex >= 0 ? appState.items[existingIndex].currentStock : 0,
+                batches: existingIndex >= 0 ? appState.items[existingIndex].batches : []
+            };
+            
+            if (item.category === 'controlado') {
+                const batch = document.getElementById('itemBatch').value;
+                const expiry = document.getElementById('itemExpiry').value;
+                if (batch) {
+                    item.batches = [{ batch, expiry, quantity: item.currentStock }];
+                }
+            }
+            
+            if (existingIndex >= 0) {
+                appState.items[existingIndex] = item;
+            } else {
+                appState.items.push(item);
+            }
+            
+            saveToLocalStorage();
+            closeItemModal();
+            renderItemsTable();
+            updateDashboard();
+        }
+
+        document.getElementById('itemCategory').addEventListener('change', function() {
+            toggleControlledFields(this.value);
+        });
+
+        function toggleControlledFields(category) {
+            const controlledFields = document.getElementById('controlledFields');
+            controlledFields.classList.toggle('hidden', category !== 'controlado');
+        }
+
+        // ==================== BLOQUEIOS ====================
+        function openBlockModal() {
+            document.getElementById('blockModalTitle').textContent = 'Gerenciar Bloqueio';
+            document.getElementById('blockForm').reset();
+            document.getElementById('blockModal').classList.add('active');
+            toggleBlockFields();
+        }
+
+        function closeBlockModal() {
+            document.getElementById('blockModal').classList.remove('active');
+        }
+
+        function openBlockModalFor(code) {
+            const item = appState.items.find(i => i.code === code);
+            if (!item) return;
+            
+            document.getElementById('blockItemId').value = code;
+            document.getElementById('blockItemName').value = item.name;
+            document.getElementById('blockModal').classList.add('active');
+            toggleBlockFields();
+        }
+
+        function toggleBlockFields() {
+            const action = document.getElementById('blockAction').value;
+            const blockFields = document.getElementById('blockFields');
+            blockFields.classList.toggle('hidden', action === 'unblock');
+        }
+
+        function saveBlock(event) {
+            event.preventDefault();
+            
+            const block = {
+                id: Date.now(),
+                itemCode: document.getElementById('blockItemId').value,
+                action: document.getElementById('blockAction').value,
+                reason: document.getElementById('blockAction').value === 'block' ? document.getElementById('blockReason').value : null,
+                quantity: parseFloat(document.getElementById('blockQuantity').value) || 0,
+                batch: document.getElementById('blockBatch').value,
+                responsible: document.getElementById('blockResponsible').value,
+                date: new Date().toISOString()
+            };
+            
+            appState.blocks.push(block);
+            saveToLocalStorage();
+            closeBlockModal();
+            renderItemsTable();
+            updateDashboard();
+        }
+
+        // ==================== PERDAS ====================
+        function openLossModal() {
+            document.getElementById('lossForm').reset();
+            document.getElementById('lossModal').classList.add('active');
+        }
+
+        function closeLossModal() {
+            document.getElementById('lossModal').classList.remove('active');
+        }
+
+        function openLossModalFor(code) {
+            const item = appState.items.find(i => i.code === code);
+            if (!item) return;
+            
+            document.getElementById('lossItemId').value = code;
+            document.getElementById('lossItemName').value = item.name;
+            document.getElementById('lossModal').classList.add('active');
+        }
+
+        function saveLoss(event) {
+            event.preventDefault();
+            
+            const loss = {
+                id: Date.now(),
+                itemCode: document.getElementById('lossItemId').value,
+                quantity: parseFloat(document.getElementById('lossQuantity').value) || 0,
+                reason: document.getElementById('lossReason').value,
+                responsible: document.getElementById('lossResponsible').value,
+                date: new Date().toISOString()
+            };
+            
+            appState.losses.push(loss);
+            
+            // Atualizar estoque
+            const item = appState.items.find(i => i.code === loss.itemCode);
+            if (item) {
+                item.currentStock = Math.max(0, (parseFloat(item.currentStock) || 0) - loss.quantity);
+            }
+            
+            saveToLocalStorage();
+            closeLossModal();
+            renderItemsTable();
+            updateDashboard();
+        }
+
+        // ==================== PEDIDO ====================
+        function renderOrderTable(filter = 'all') {
+            const tbody = document.querySelector('#orderTable tbody');
+            
+            // Pré-popular com itens críticos, atenção e em falta
+            if (appState.orderItems.length === 0) {
+                appState.items.forEach(item => {
+                    const status = getItemStatus(item);
+                    const isMissing = isItemMissing(item);
+                    if (status === 'critical' || status === 'warning' || isMissing) {
+                        const suggested = calculateSuggestedQuantity(item);
+                        if (suggested > 0) {
+                            appState.orderItems.push({
+                                code: item.code,
+                                suggested: suggested,
+                                orderQty: suggested,
+                                responsible: ''
+                            });
+                        }
+                    }
+                });
+            }
+            
+            let filtered = appState.orderItems.map(oi => {
+                const item = appState.items.find(i => i.code === oi.code);
+                return { ...oi, item };
+            });
+            
+            if (filter === 'critical') {
+                filtered = filtered.filter(oi => getItemStatus(oi.item) === 'critical');
+            } else if (filter === 'warning') {
+                filtered = filtered.filter(oi => getItemStatus(oi.item) === 'warning');
+            } else if (filter === 'missing') {
+                filtered = filtered.filter(oi => isItemMissing(oi.item));
+            } else if (filter === 'selected') {
+                filtered = filtered.filter(oi => oi.orderQty > 0);
+            }
+            
+            tbody.innerHTML = filtered.map(oi => {
+                const item = oi.item;
+                if (!item) return '';
+                
+                const usefulStock = getUsefulStock(item);
+                const cmm = calculateCMM(item.code);
+                const isMissing = isItemMissing(item);
+                const margin = isMissing ? appState.settings.marginMissing : appState.settings.marginNormal;
+                
+                return `
+                    <tr>
+                        <td><input type="checkbox" checked onchange="toggleOrderItem('${oi.code}', this.checked)"></td>
+                        <td>${item.code}</td>
+                        <td>${item.name}</td>
+                        <td>${getCategoryLabel(item.category)}</td>
+                        <td>${usefulStock}</td>
+                        <td>${cmm.toFixed(1)}</td>
+                        <td>${oi.suggested}</td>
+                        <td>
+                            <input type="number" class="form-input" 
+                                   value="${oi.orderQty}" 
+                                   min="0"
+                                   style="width: 100px;"
+                                   onchange="updateOrderQty('${oi.code}', this.value)">
+                        </td>
+                        <td>${margin}%</td>
+                        <td>
+                            <input type="text" class="form-input" 
+                                   value="${oi.responsible || ''}" 
+                                   placeholder="Feito por"
+                                   style="width: 120px;"
+                                   onchange="updateOrderResponsible('${oi.code}', this.value)">
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            updateOrderSummary();
+        }
+
+        function filterOrder(filter) {
+            document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            renderOrderTable(filter);
+        }
+
+        function toggleOrderItem(code, checked) {
+            const orderItem = appState.orderItems.find(oi => oi.code === code);
+            if (orderItem) {
+                if (!checked) {
+                    orderItem.orderQty = 0;
+                } else {
+                    orderItem.orderQty = orderItem.suggested;
+                }
+                updateOrderSummary();
+            }
+        }
+
+        function updateOrderQty(code, value) {
+            const orderItem = appState.orderItems.find(oi => oi.code === code);
+            if (orderItem) {
+                orderItem.orderQty = parseInt(value) || 0;
+                updateOrderSummary();
+            }
+        }
+
+        function updateOrderResponsible(code, value) {
+            const orderItem = appState.orderItems.find(oi => oi.code === code);
+            if (orderItem) {
+                orderItem.responsible = value;
+            }
+        }
+
+        function acceptAllSuggestions() {
+            appState.orderItems.forEach(oi => {
+                oi.orderQty = oi.suggested;
+            });
+            renderOrderTable();
+        }
+
+        function openItemPicker() {
+            renderPickerItems();
+            document.getElementById('pickerModal').classList.add('active');
+        }
+
+        function closePickerModal() {
+            document.getElementById('pickerModal').classList.remove('active');
+        }
+
+        function renderPickerItems() {
+            const tbody = document.querySelector('#pickerTable tbody');
+            const search = document.getElementById('pickerSearch').value.toLowerCase();
+            const category = document.getElementById('pickerCategory').value;
+            
+            const existingCodes = new Set(appState.orderItems.map(oi => oi.code));
+            
+            let filtered = appState.items.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(search) || 
+                                     item.code.toLowerCase().includes(search);
+                const matchesCategory = !category || item.category === category;
+                const notInOrder = !existingCodes.has(item.code);
+                return matchesSearch && matchesCategory && notInOrder;
+            });
+            
+            tbody.innerHTML = filtered.map(item => {
+                const cmm = calculateCMM(item.code);
+                return `
+                    <tr>
+                        <td><input type="checkbox" class="picker-checkbox" value="${item.code}"></td>
+                        <td>${item.code}</td>
+                        <td>${item.name}</td>
+                        <td>${getCategoryLabel(item.category)}</td>
+                        <td>${item.currentStock || 0}</td>
+                        <td>${cmm.toFixed(1)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function addSelectedToOrder() {
+            const checkboxes = document.querySelectorAll('.picker-checkbox:checked');
+            checkboxes.forEach(cb => {
+                const code = cb.value;
+                const item = appState.items.find(i => i.code === code);
+                if (item && !appState.orderItems.find(oi => oi.code === code)) {
+                    const suggested = calculateSuggestedQuantity(item);
+                    appState.orderItems.push({
+                        code: code,
+                        suggested: suggested,
+                        orderQty: suggested,
+                        responsible: ''
+                    });
+                }
+            });
+            
+            closePickerModal();
+            renderOrderTable();
+        }
+
+        function updateOrderSummary() {
+            const summary = document.getElementById('orderSummary');
+            const total = appState.orderItems.reduce((sum, oi) => sum + (oi.orderQty || 0), 0);
+            const selected = appState.orderItems.filter(oi => oi.orderQty > 0).length;
+            
+            const byCategory = {};
+            appState.orderItems.forEach(oi => {
+                if (oi.orderQty > 0 && oi.item) {
+                    const cat = getCategoryLabel(oi.item.category);
+                    byCategory[cat] = (byCategory[cat] || 0) + oi.orderQty;
+                }
+            });
+            
+            let html = `<p><strong>Total de itens no pedido:</strong> ${selected}</p>`;
+            html += `<p><strong>Quantidade total:</strong> ${total} unidades</p>`;
+            html += '<div style="margin-top: 12px;"><strong>Por categoria:</strong></div>';
+            Object.entries(byCategory).forEach(([cat, qty]) => {
+                html += `<div style="padding-left: 16px;">${cat}: ${qty}</div>`;
+            });
+            
+            const deliveryCold = document.getElementById('deliveryDateCold').value;
+            const deliveryAmbient = document.getElementById('deliveryDateAmbient').value;
+            if (deliveryCold) html += `<p style="margin-top: 12px;"><strong>Entrega Frio:</strong> ${formatDate(deliveryCold)}</p>`;
+            if (deliveryAmbient) html += `<p><strong>Entrega Ambiente:</strong> ${formatDate(deliveryAmbient)}</p>`;
+            
+            summary.innerHTML = html;
+        }
+
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        function exportOrderCSV() {
+            const rows = [['Código', 'Nome', 'Categoria', 'Unidade', 'Qtd Pedido', 'Responsável']];
+            
+            appState.orderItems.forEach(oi => {
+                if (oi.orderQty > 0 && oi.item) {
+                    rows.push([
+                        oi.item.code,
+                        oi.item.name,
+                        getCategoryLabel(oi.item.category),
+                        oi.item.unit || '',
+                        oi.orderQty,
+                        oi.responsible || ''
+                    ]);
+                }
+            });
+            
+            downloadCSV(rows, 'pedido_' + new Date().toISOString().split('T')[0] + '.csv');
+        }
+
+        // ==================== IMPORTAÇÃO ====================
+        function updateImportTemplate() {
+            // Apenas atualiza o label visualmente
+        }
+
+        function downloadTemplate() {
+            const type = document.getElementById('importType').value;
+            let headers = [];
+            let sampleData = [];
+            
+            switch(type) {
+                case 'stock':
+                    headers = ['codigo', 'nome', 'quantidade', 'lote', 'validade'];
+                    sampleData = ['ABC123', 'Paracetamol 500mg', '1000', 'L12345', '2025-12-31'];
+                    break;
+                case 'consumption':
+                    headers = ['codigo', 'mes', 'quantidade'];
+                    sampleData = ['ABC123', '2024-01', '500'];
+                    break;
+                case 'items':
+                    headers = ['codigo', 'nome', 'categoria', 'unidade', 'estoque_minimo', 'estoque_maximo'];
+                    sampleData = ['ABC123', 'Paracetamol 500mg', 'termoestavel', 'CX', '100', '1000'];
+                    break;
+            }
+            
+            const csv = [headers.join(';'), sampleData.join(';')].join('\n');
+            downloadFile(csv, 'modelo_importacao.csv', 'text/csv');
+        }
+
+        async function processImport() {
+            const file = document.getElementById('importFile').files[0];
+            const type = document.getElementById('importType').value;
+            
+            if (!file) {
+                alert('Selecione um arquivo para importar.');
+                return;
+            }
+            
+            const content = await readFile(file);
+            
+            if (type === 'backup') {
+                try {
+                    const data = JSON.parse(content);
+                    pendingImport = { type, data: data, preview: 'Backup completo' };
+                    showImportPreview('Backup carregado com sucesso!');
+                } catch (e) {
+                    alert('Erro ao ler arquivo de backup. Verifique se é um JSON válido.');
+                }
+                return;
+            }
+            
+            const rows = parseCSV(content);
+            const errors = validateImport(type, rows);
+            
+            if (errors.length > 0) {
+                showImportErrors(errors);
+            }
+            
+            pendingImport = { type, rows, errors };
+            showImportPreview(generatePreview(type, rows.slice(0, 5)));
+        }
+
+        function readFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+
+        function parseCSV(content) {
+            const lines = content.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(';').map(h => h.trim().toLowerCase());
+            const rows = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(';').map(v => v.trim());
+                const row = {};
+                headers.forEach((h, idx) => {
+                    row[h] = values[idx] || '';
+                });
+                rows.push(row);
+            }
+            
+            return rows;
+        }
+
+        function validateImport(type, rows) {
+            const errors = [];
+            
+            if (rows.length === 0) {
+                errors.push('Nenhum dado encontrado no arquivo.');
+                return errors;
+            }
+            
+            const requiredColumns = {
+                stock: ['codigo', 'quantidade'],
+                consumption: ['codigo', 'quantidade'],
+                items: ['codigo', 'nome', 'categoria']
+            };
+            
+            const firstRow = rows[0];
+            const columns = Object.keys(firstRow);
+            
+            requiredColumns[type]?.forEach(col => {
+                if (!columns.includes(col)) {
+                    errors.push(`Coluna '${col}' não encontrada no CSV — confira o cabeçalho da planilha.`);
+                }
+            });
+            
+            rows.forEach((row, idx) => {
+                if (type === 'stock' || type === 'consumption') {
+                    const qty = parseFloat(row.quantidade);
+                    if (isNaN(qty)) {
+                        errors.push(`Linha ${idx + 2}: Valor inválido na coluna 'quantidade' — verifique se está no formato numérico.`);
+                    }
+                }
+                
+                if (type === 'items') {
+                    if (!['termolabil', 'termoestavel', 'controlado'].includes(row.categoria?.toLowerCase())) {
+                        errors.push(`Linha ${idx + 2}: Categoria inválida '${row.categoria}' — use 'termolabil', 'termoestavel' ou 'controlado'.`);
+                    }
+                }
+            });
+            
+            return errors;
+        }
+
+        function showImportPreview(previewHtml) {
+            document.getElementById('importPreview').classList.remove('hidden');
+            document.getElementById('importPreviewTable').innerHTML = previewHtml;
+        }
+
+        function showImportErrors(errors) {
+            const errorDiv = document.getElementById('importErrors');
+            const errorList = document.getElementById('importErrorsList');
+            errorList.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+            errorDiv.classList.remove('hidden');
+        }
+
+        function generatePreview(type, rows) {
+            if (rows.length === 0) return '<p>Nenhum dado para visualizar.</p>';
+            
+            const headers = Object.keys(rows[0]);
+            let html = '<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
+            html += '<tbody>' + rows.map(row => 
+                '<tr>' + headers.map(h => `<td>${row[h]}</td>`).join('') + '</tr>'
+            ).join('') + '</tbody>';
+            
+            return html;
+        }
+
+        function confirmImport() {
+            if (!pendingImport) return;
+            
+            const { type, rows, data } = pendingImport;
+            
+            if (type === 'backup') {
+                appState = { ...appState, ...data };
+                saveToLocalStorage();
+                alert('Backup restaurado com sucesso!');
+                location.reload();
+                return;
+            }
+            
+            let imported = 0;
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (type === 'stock') {
+                rows.forEach(row => {
+                    const code = row.codigo || row.código || row.code;
+                    const qty = parseFloat(row.quantidade || row.quantity || 0);
+                    
+                    let item = appState.items.find(i => i.code === code);
+                    if (!item) {
+                        item = {
+                            code: code,
+                            name: row.nome || row.name || code,
+                            category: 'termoestavel',
+                            unit: row.unidade || row.unit || 'UN',
+                            minStock: 0,
+                            maxStock: 0,
+                            onOrder: 0,
+                            currentStock: 0,
+                            batches: []
+                        };
+                        appState.items.push(item);
+                    }
+                    
+                    item.currentStock = qty;
+                    
+                    // Adicionar ao histórico
+                    appState.stockHistory.push({
+                        code: code,
+                        quantity: qty,
+                        date: today
+                    });
+                    
+                    imported++;
+                });
+            } else if (type === 'consumption') {
+                rows.forEach(row => {
+                    const code = row.codigo || row.código || row.code;
+                    const qty = parseFloat(row.quantidade || row.quantity || 0);
+                    const month = row.mes || row.mês || row.month;
+                    
+                    if (code && qty && month) {
+                        appState.consumptionHistory.push({
+                            code: code,
+                            quantity: qty,
+                            month: month
+                        });
+                        imported++;
+                    }
+                });
+            } else if (type === 'items') {
+                rows.forEach(row => {
+                    const code = row.codigo || row.código || row.code;
+                    
+                    if (!appState.items.find(i => i.code === code)) {
+                        appState.items.push({
+                            code: code,
+                            name: row.nome || row.name || code,
+                            category: (row.categoria || row.category || 'termoestavel').toLowerCase(),
+                            unit: row.unidade || row.unit || 'UN',
+                            minStock: parseInt(row.estoque_minimo || row.min_stock || 0),
+                            maxStock: parseInt(row.estoque_maximo || row.max_stock || 0),
+                            onOrder: 0,
+                            currentStock: 0,
+                            batches: []
+                        });
+                        imported++;
+                    }
+                });
+            }
+            
+            // Registrar no histórico de importações
+            appState.importHistory.push({
+                date: new Date().toISOString(),
+                type: type,
+                count: imported,
+                source: document.getElementById('importFile').files[0]?.name || 'Manual'
+            });
+            
+            saveToLocalStorage();
+            cancelImport();
+            renderItemsTable();
+            renderImportHistory();
+            updateDashboard();
+            alert(`${imported} itens importados com sucesso!`);
+        }
+
+        function cancelImport() {
+            document.getElementById('importPreview').classList.add('hidden');
+            document.getElementById('importErrors').classList.add('hidden');
+            document.getElementById('importFile').value = '';
+            pendingImport = null;
+        }
+
+        function renderImportHistory() {
+            const tbody = document.querySelector('#importHistoryTable tbody');
+            tbody.innerHTML = appState.importHistory.slice(-10).reverse().map(h => `
+                <tr>
+                    <td>${new Date(h.date).toLocaleString('pt-BR')}</td>
+                    <td>${h.type}</td>
+                    <td>${h.count}</td>
+                    <td>${h.source}</td>
+                </tr>
+            `).join('');
+        }
+
+        // ==================== RELATÓRIOS ====================
+        function showReport(type) {
+            currentReport = type;
+            document.querySelectorAll('[data-report]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.report === type);
+            });
+            renderCurrentReport();
+        }
+
+        function renderCurrentReport() {
+            const table = document.getElementById('reportTable');
+            const categoryFilter = document.getElementById('reportCategoryFilter').value;
+            
+            let data = [];
+            let headers = [];
+            
+            switch(currentReport) {
+                case 'missing':
+                    headers = ['Código', 'Nome', 'Categoria', 'Estoque Atual', 'CMM', 'Dias em Falta'];
+                    data = appState.items
+                        .filter(i => !categoryFilter || i.category === categoryFilter)
+                        .filter(i => isItemMissing(i))
+                        .map(i => [i.code, i.name, getCategoryLabel(i.category), i.currentStock, calculateCMM(i.code).toFixed(1), '-']);
+                    break;
+                    
+                case 'blocked':
+                    headers = ['Item', 'Motivo', 'Quantidade', 'Data', 'Responsável', 'Lote'];
+                    const blockedItems = appState.blocks.filter(b => b.action === 'block');
+                    data = blockedItems
+                        .filter(b => {
+                            const item = appState.items.find(i => i.code === b.itemCode);
+                            return !categoryFilter || item?.category === categoryFilter;
+                        })
+                        .map(b => {
+                            const item = appState.items.find(i => i.code === b.itemCode);
+                            return [item?.name || b.itemCode, b.reason, b.quantity, new Date(b.date).toLocaleDateString('pt-BR'), b.responsible, b.batch || '-'];
+                        });
+                    break;
+                    
+                case 'rupture':
+                    headers = ['Código', 'Nome', 'Categoria', 'Estoque Útil', 'CMM', 'Data Prevista de Ruptura'];
+                    data = appState.items
+                        .filter(i => !categoryFilter || i.category === categoryFilter)
+                        .filter(i => calculateCMM(i.code) > 0)
+                        .map(i => {
+                            const ruptureDate = calculateRuptureDate(i);
+                            return [
+                                i.code, 
+                                i.name, 
+                                getCategoryLabel(i.category), 
+                                getUsefulStock(i), 
+                                calculateCMM(i.code).toFixed(1),
+                                ruptureDate ? ruptureDate.toLocaleDateString('pt-BR') : 'N/A'
+                            ];
+                        })
+                        .sort((a, b) => {
+                            const dateA = a[5] === 'N/A' ? Infinity : new Date(a[5].split('/').reverse().join('-'));
+                            const dateB = b[5] === 'N/A' ? Infinity : new Date(b[5].split('/').reverse().join('-'));
+                            return dateA - dateB;
+                        });
+                    break;
+                    
+                case 'validity':
+                    headers = ['Código', 'Nome', 'Categoria', 'Risco', 'Qtd Próxima do Vencimento', 'Consumo Projetado'];
+                    data = appState.items
+                        .filter(i => !categoryFilter || i.category === categoryFilter)
+                        .filter(i => getValidityRisk(i) !== 'none')
+                        .map(i => {
+                            const risk = getValidityRisk(i);
+                            const riskLabel = risk === 'high' ? '🔴 Iminente' : risk === 'medium' ? '🟠 Atenção' : '🟢 Baixo';
+                            return [i.code, i.name, getCategoryLabel(i.category), riskLabel, '-', '-'];
+                        });
+                    break;
+                    
+                case 'excess':
+                    headers = ['Código', 'Nome', 'Categoria', 'Estoque Atual', 'CMM', 'Cobertura (meses)', 'Excesso'];
+                    data = appState.items
+                        .filter(i => !categoryFilter || i.category === categoryFilter)
+                        .filter(i => getItemStatus(i) === 'excess')
+                        .map(i => {
+                            const cmm = calculateCMM(i.code);
+                            const coverage = cmm > 0 ? (getUsefulStock(i) / cmm).toFixed(1) : 'N/A';
+                            return [i.code, i.name, getCategoryLabel(i.category), getUsefulStock(i), cmm.toFixed(1), coverage, 'Sim'];
+                        });
+                    break;
+                    
+                case 'history':
+                    headers = ['Data', 'Código', 'Nome', 'Estoque', 'Consumo'];
+                    // Implementar histórico por item
+                    data = [];
+                    break;
+            }
+            
+            table.innerHTML = `
+                <thead>
+                    <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                    ${data.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+            `;
+        }
+
+        function exportCurrentReport() {
+            const table = document.getElementById('reportTable');
+            const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent);
+            const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
+                Array.from(tr.querySelectorAll('td')).map(td => td.textContent)
+            );
+            
+            downloadCSV([headers, ...rows], `relatorio_${currentReport}_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        // ==================== CONFIGURAÇÕES ====================
+        function loadSettings() {
+            document.getElementById('configCoverage').value = appState.settings.coverage;
+            document.getElementById('configCriticalLimit').value = appState.settings.criticalLimit;
+            document.getElementById('configValidityWindow').value = appState.settings.validityWindow;
+            document.getElementById('configExcessFactor').value = appState.settings.excessFactor;
+            document.getElementById('configMarginMissing').value = appState.settings.marginMissing;
+            document.getElementById('configMarginNormal').value = appState.settings.marginNormal;
+            document.getElementById('configHistoryRetention').value = appState.settings.historyRetention;
+        }
+
+        function saveSettings() {
+            appState.settings = {
+                coverage: parseFloat(document.getElementById('configCoverage').value) || 1,
+                criticalLimit: parseFloat(document.getElementById('configCriticalLimit').value) || 10,
+                validityWindow: parseInt(document.getElementById('configValidityWindow').value) || 90,
+                excessFactor: parseInt(document.getElementById('configExcessFactor').value) || 150,
+                marginMissing: parseInt(document.getElementById('configMarginMissing').value) || 30,
+                marginNormal: parseInt(document.getElementById('configMarginNormal').value) || 20,
+                historyRetention: parseInt(document.getElementById('configHistoryRetention').value) || 12
+            };
+            saveToLocalStorage();
+            updateDashboard();
+            renderItemsTable();
+            renderOrderTable();
+        }
+
+        function exportFullBackup() {
+            const json = JSON.stringify(appState, null, 2);
+            downloadFile(json, 'backup_almoxarifado_' + new Date().toISOString().split('T')[0] + '.json', 'application/json');
+        }
+
+        function importFullBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            readFile(file).then(content => {
+                try {
+                    const data = JSON.parse(content);
+                    if (confirm('Isso substituirá todos os dados atuais. Continuar?')) {
+                        appState = data;
+                        saveToLocalStorage();
+                        location.reload();
+                    }
+                } catch (e) {
+                    alert('Erro ao ler arquivo de backup. Verifique se é um JSON válido.');
+                }
+            });
+        }
+
+        function clearAllData() {
+            if (confirm('Tem certeza que deseja limpar TODOS os dados? Esta ação não pode ser desfeita.')) {
+                localStorage.removeItem('almoxarifadoFarmacia');
+                location.reload();
+            }
+        }
+
+        // ==================== UTILITÁRIOS ====================
+        function downloadCSV(rows, filename) {
+            const csv = rows.map(row => row.map(cell => {
+                if (typeof cell === 'string' && (cell.includes(',') || cell.includes(';') || cell.includes('"'))) {
+                    return '"' + cell.replace(/"/g, '""') + '"';
+                }
+                return cell;
+            }).join(';')).join('\n');
+            
+            // Adicionar BOM UTF-8
+            const bom = '\uFEFF';
+            downloadFile(bom + csv, filename, 'text/csv;charset=utf-8');
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Expor funções globalmente
+        window.applyFilter = applyFilter;
+        window.acceptAllSuggestions = acceptAllSuggestions;
+        window.openItemPicker = openItemPicker;
+        window.closePickerModal = closePickerModal;
+        window.addSelectedToOrder = addSelectedToOrder;
+        window.updateOrderQty = updateOrderQty;
+        window.updateOrderResponsible = updateOrderResponsible;
+        window.toggleOrderItem = toggleOrderItem;
+        window.filterOrder = filterOrder;
+        window.exportOrderCSV = exportOrderCSV;
+        window.processImport = processImport;
+        window.confirmImport = confirmImport;
+        window.cancelImport = cancelImport;
+        window.downloadTemplate = downloadTemplate;
+        window.showReport = showReport;
+        window.renderCurrentReport = renderCurrentReport;
+        window.exportCurrentReport = exportCurrentReport;
+        window.saveSettings = saveSettings;
+        window.exportFullBackup = exportFullBackup;
+        window.importFullBackup = importFullBackup;
+        window.clearAllData = clearAllData;
+        window.openItemModal = openItemModal;
+        window.closeItemModal = closeItemModal;
+        window.editItem = editItem;
+        window.saveItem = saveItem;
+        window.openBlockModal = openBlockModal;
+        window.closeBlockModal = closeBlockModal;
+        window.openBlockModalFor = openBlockModalFor;
+        window.toggleBlockFields = toggleBlockFields;
+        window.saveBlock = saveBlock;
+        window.openLossModal = openLossModal;
+        window.closeLossModal = closeLossModal;
+        window.openLossModalFor = openLossModalFor;
+        window.saveLoss = saveLoss;
+        window.exportItemsCSV = () => {
+            const rows = [['Código', 'Nome', 'Categoria', 'Unidade', 'Estoque Mín', 'Estoque Máx', 'Estoque Atual', 'CMM']];
+            appState.items.forEach(item => {
+                rows.push([
+                    item.code,
+                    item.name,
+                    item.category,
+                    item.unit,
+                    item.minStock,
+                    item.maxStock,
+                    item.currentStock,
+                    calculateCMM(item.code).toFixed(1)
+                ]);
+            });
+            downloadCSV(rows, 'itens_cadastrados_' + new Date().toISOString().split('T')[0] + '.csv');
+        };
+    </script>
+</body>
+</html>
