@@ -1,0 +1,2981 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão de Almoxarifado Farmacêutico — CEAF/SIGAF</title>
+<style>
+/* ======================================================================
+   DESIGN SYSTEM ÚNICO (Fase 4)
+   Extraído e generalizado a partir da Calculadora de Programação original
+   e aplicado a TODAS as telas do sistema (Painel, Itens, Pedido, Relatórios,
+   Configurações), eliminando a mistura de dois visuais diferentes.
+   ====================================================================== */
+:root{
+  --sage:#AECB6B; --sage-dark:#4FA98A; --sage-deep:#2F6E5C;
+  --ink:#2B3324; --ink-soft:#5A6350;
+  --white:#FFFFFF; --surface:#F6F7F2; --surface-2:#EEF1E6;
+  --border:#DCE3CC; --border-soft:#E7ECDC;
+  --amber:#B9852E; --amber-bg:#FBF3E3;
+  --red:#B3261E; --red-bg:#FBEAE7;
+  --blue:#3E7CA6; --blue-bg:#E7F0F6;
+  --calc-bg:#EBEBEB; --calc-border:#D6D6D6; --calc-ink:#5F5F5F;
+  --radius-lg:18px; --radius-md:12px; --radius-sm:8px;
+  --shadow:0 1px 2px rgba(43,51,36,.04),0 8px 24px rgba(43,51,36,.06);
+  --serif:Georgia,'Iowan Old Style','Palatino Linotype',Palatino,ui-serif,serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:'SF Mono','Consolas','Menlo',monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans); color:var(--ink); min-height:100vh;
+  background:radial-gradient(1200px 600px at 15% -10%,#F1F5E8 0%,transparent 60%),var(--surface);
+  -webkit-font-smoothing:antialiased; line-height:1.5;
+}
+header.top{background:linear-gradient(155deg,var(--sage) 0%,var(--sage-dark) 100%);color:#fff;position:relative;overflow:hidden}
+header.top::after{content:"";position:absolute;inset:0;background:radial-gradient(600px 300px at 90% 0%,rgba(255,255,255,.14),transparent 60%);pointer-events:none}
+.top-inner{max-width:1180px;margin:0 auto;padding:26px 28px 22px;position:relative}
+.eyebrow{display:flex;align-items:center;gap:10px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:rgba(255,255,255,.92);margin-bottom:12px}
+.sus-mark{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35);font-family:var(--serif);font-weight:700;font-size:13px}
+h1.title{font-family:var(--serif);font-weight:700;font-size:clamp(21px,2.8vw,30px);line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
+.subtitle{font-size:13.5px;color:rgba(255,255,255,.9);max-width:760px;margin:0}
+main{max-width:1180px;margin:0 auto;padding:22px 24px 60px}
+
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;background:var(--white);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:6px;margin-bottom:20px;box-shadow:var(--shadow);position:sticky;top:10px;z-index:40}
+nav.tabs button{font-family:var(--sans);font-size:13.5px;font-weight:700;padding:9px 14px;border-radius:var(--radius-sm);border:1.5px solid transparent;background:transparent;color:var(--ink-soft);cursor:pointer;transition:all .15s ease;white-space:nowrap}
+nav.tabs button:hover{background:var(--surface);color:var(--ink)}
+nav.tabs button.active{background:linear-gradient(155deg,var(--sage) 0%,var(--sage-dark) 100%);color:#fff;box-shadow:0 2px 6px rgba(47,110,92,.25)}
+
+.card{background:var(--white);border:1px solid var(--border-soft);border-radius:var(--radius-lg);box-shadow:var(--shadow);margin-bottom:20px;overflow:hidden}
+.card-head{padding:20px 24px 16px;border-bottom:1px solid var(--border-soft);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;background:linear-gradient(180deg,var(--surface) 0%,rgba(246,247,242,0) 100%)}
+.card-head-main{display:flex;align-items:flex-start;gap:14px}
+.step-badge{flex-shrink:0;width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--sage) 0%,var(--sage-dark) 100%);color:#fff;font-family:var(--serif);font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(47,110,92,.28)}
+.step-badge.amber{background:linear-gradient(155deg,#D9A44B 0%,var(--amber) 100%);box-shadow:0 2px 6px rgba(185,133,46,.32)}
+.card-head .label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--sage-deep)}
+.card-head h2{font-family:var(--serif);font-size:18px;font-weight:700;margin:2px 0 0;color:var(--ink)}
+.card-head p.desc{margin:6px 0 0;font-size:12.5px;color:var(--ink-soft);max-width:620px;line-height:1.5}
+.card-body{padding:20px 24px 24px}
+.subsection{margin-bottom:22px}
+.subsection:last-child{margin-bottom:0}
+.subsection-head{display:flex;align-items:center;gap:8px;margin:0 0 12px}
+.subsection-head .dash{width:14px;height:2px;background:var(--sage-dark);border-radius:2px;flex-shrink:0}
+.subsection-head h3{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:0}
+
+.field{position:relative}
+.field label{display:flex;align-items:flex-start;gap:6px;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px;min-height:18px}
+.field input,.field select{width:100%;height:40px;font-family:var(--sans);font-size:13.5px;padding:0 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--white);color:var(--ink)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--sage-dark);box-shadow:0 0 0 3px rgba(79,169,138,.3)}
+.field.invalid input{border-color:var(--red);box-shadow:0 0 0 3px rgba(179,38,30,.12)}
+.field-error{display:none;margin-top:5px;font-size:11.5px;color:var(--red)}
+.field.invalid .field-error{display:block}
+.required-mark{color:var(--red);font-weight:700;margin-left:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.grid.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.field-lg{grid-column:span 2}
+@media(max-width:640px){.field-lg{grid-column:span 1}}
+
+.hint{position:relative;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--surface-2);color:var(--sage-deep);font-size:10px;font-weight:700;font-family:var(--serif);cursor:help;border:1px solid var(--border);flex-shrink:0}
+.js-tooltip{position:fixed;display:none;max-width:260px;width:max-content;background:var(--ink);color:#F3F5EE;font-family:var(--sans);font-size:12px;line-height:1.5;padding:9px 11px;border-radius:var(--radius-sm);box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:9999;pointer-events:none}
+
+button{font-family:var(--sans);font-size:13px;font-weight:600;padding:9px 18px;border-radius:var(--radius-sm);cursor:pointer;border:1.5px solid transparent;transition:all .15s ease}
+button.primary{background:linear-gradient(155deg,var(--sage-dark) 0%,var(--sage-deep) 100%);color:#fff;box-shadow:0 1px 2px rgba(47,110,92,.15),0 6px 16px rgba(47,110,92,.2)}
+button.primary:hover{transform:translateY(-1px)}
+button.ghost{background:var(--white);border-color:var(--border);color:var(--ink-soft)}
+button.ghost:hover{border-color:var(--sage-dark);color:var(--sage-deep);background:var(--surface)}
+button.danger{background:var(--white);border-color:rgba(179,38,30,.4);color:var(--red)}
+button.danger:hover{background:var(--red-bg)}
+button:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(79,169,138,.35)}
+button.small{padding:5px 10px;font-size:12px}
+.link-btn{background:none;border:none;color:var(--ink-soft);font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:2px;cursor:pointer;padding:2px 0}
+.link-btn:hover{color:var(--red)}
+
+.status-badge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:4px 9px 4px 8px;border-radius:20px;white-space:nowrap}
+.status-badge .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.status-badge.red{background:var(--red-bg);color:var(--red)} .status-badge.red .dot{background:var(--red)}
+.status-badge.amber{background:var(--amber-bg);color:var(--amber)} .status-badge.amber .dot{background:var(--amber)}
+.status-badge.green{background:#EAF1E1;color:var(--sage-deep)} .status-badge.green .dot{background:var(--sage-deep)}
+.status-badge.gray{background:#F0F2EB;color:#8A9080} .status-badge.gray .dot{background:#8A9080}
+.status-badge.blue{background:var(--blue-bg);color:var(--blue)} .status-badge.blue .dot{background:var(--blue)}
+
+.term-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:#E3F0EC;color:var(--sage-deep);border:1px solid rgba(47,110,92,.22);white-space:nowrap;vertical-align:middle}
+.trend{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:700;white-space:nowrap}
+.trend.alta{color:var(--red)} .trend.queda{color:var(--blue)} .trend.estavel{color:var(--ink-soft)}
+.abc-badge{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:6px;font-size:10.5px;font-weight:700;flex-shrink:0}
+.abc-badge.A{background:#FBEAE7;color:var(--red)} .abc-badge.B{background:var(--amber-bg);color:var(--amber)} .abc-badge.C{background:#EAF1E1;color:var(--sage-deep)}
+.item-link{color:var(--sage-deep);text-decoration:underline;text-underline-offset:2px;cursor:pointer;font-weight:600}
+.item-link:hover{color:var(--sage-dark)}
+
+table{width:100%;border-collapse:separate;border-spacing:0}
+.table-scroll{overflow-x:auto;max-height:620px;overflow-y:auto;border:1px solid var(--border-soft);border-radius:var(--radius-md)}
+thead th{position:sticky;top:0;text-align:left;font-size:9.5px;letter-spacing:.02em;text-transform:uppercase;font-weight:700;color:var(--sage-deep);background:var(--surface);padding:8px 6px;border-bottom:2px solid var(--border);white-space:nowrap}
+tbody td{padding:6px 5px;border-bottom:1px solid var(--border-soft);font-size:11.5px;vertical-align:middle}
+tbody tr:hover td{background:#FBFCF9}
+tbody td.name{font-weight:600;color:var(--ink);max-width:230px;white-space:normal;line-height:1.35}
+tbody td.code{color:var(--ink-soft);font-family:var(--mono);font-size:10.5px;white-space:nowrap}
+td input[type=number],td input[type=text]{width:58px;font-family:var(--mono);font-size:11px;padding:4px 4px;border:1.5px solid var(--border);border-radius:6px;text-align:right;background:var(--white);color:var(--ink)}
+td input:focus{outline:none;border-color:var(--sage-dark);box-shadow:0 0 0 3px rgba(79,169,138,.3)}
+td input.readonly-calc{background:var(--calc-bg);color:var(--calc-ink);border-color:var(--calc-border)}
+td.result{background:var(--calc-bg);font-weight:700;color:var(--calc-ink);text-align:right;font-family:var(--mono);font-size:11px}
+.prog-cell{display:flex;align-items:center;gap:5px}
+.prog-cell input{flex:1;min-width:0}
+.empty-row td{text-align:center;color:var(--ink-soft);padding:34px 20px;font-size:13.5px;line-height:1.6}
+
+.search-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.search-bar input[type=search],.search-bar select{height:38px;font-family:var(--sans);font-size:13px;padding:0 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--white);color:var(--ink)}
+.search-bar input[type=search]{flex:1 1 260px;min-width:200px}
+.search-bar select{min-width:170px}
+
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:4px 0 18px}
+.stat{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:14px 16px;cursor:pointer;transition:box-shadow .15s ease,transform .15s ease}
+.stat:hover{box-shadow:0 6px 16px rgba(43,51,36,.08);transform:translateY(-1px)}
+.stat .num{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--sage-deep);line-height:1}
+.stat.accent-red .num{color:var(--red)} .stat.accent-amber .num{color:var(--amber)} .stat.accent-blue .num{color:var(--blue)}
+
+.status-import-tile{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:12px 14px;cursor:pointer;transition:box-shadow .15s ease,transform .15s ease}
+.status-import-tile:hover{box-shadow:0 6px 16px rgba(43,51,36,.08);transform:translateY(-1px)}
+.status-import-tile .sit-icon{font-size:19px;flex-shrink:0;line-height:1.1}
+.status-import-tile .sit-title{font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.status-import-tile .sit-status{font-size:11px;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:4px}
+.status-import-tile.ok .sit-status{color:var(--sage-deep)}
+.status-import-tile.pending .sit-status{color:var(--ink-soft)}
+.status-import-tile .sit-detail{font-size:10.5px;color:var(--ink-soft);line-height:1.45}
+.stat .cap{font-size:11px;color:var(--ink-soft);margin-top:6px}
+
+.timeline{position:relative;padding:10px 0 4px}
+.timeline-track{position:relative;height:6px;border-radius:6px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border-soft)}
+.timeline-fill{position:absolute;top:0;left:0;bottom:0;width:0%;background:linear-gradient(90deg,var(--sage) 0%,var(--sage-dark) 100%);transition:width .3s ease}
+.timeline-marker{position:absolute;top:-3px;width:2px;height:12px;border-radius:2px;transform:translateX(-1px);display:none}
+.timeline-marker.frio{background:var(--sage-deep)} .timeline-marker.amb{background:var(--amber)}
+.timeline-labels{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--ink-soft)}
+.timeline-labels b{color:var(--ink);font-weight:700}
+
+.indicators-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:26px;align-items:stretch}
+.indicator-divider{width:1px;align-self:stretch;background:linear-gradient(180deg,transparent 0%,var(--border) 12%,var(--border) 88%,transparent 100%)}
+@media(max-width:860px){.indicators-grid{grid-template-columns:1fr;gap:20px}.indicator-divider{width:auto;height:1px}}
+.legend-subtitle{font-family:var(--serif);font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:8px}
+.legend-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.legend-stat{background:var(--white);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:13px 14px;display:flex;align-items:center;gap:11px;box-shadow:0 1px 2px rgba(43,51,36,.03)}
+.legend-stat.st-red{border-color:rgba(179,38,30,.25)} .legend-stat.st-amber{border-color:rgba(185,133,46,.28)}
+.legend-stat.st-green{border-color:rgba(47,110,92,.25)} .legend-stat.st-gray{border-color:var(--border)}
+.legend-stat .num{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink);line-height:1}
+.legend-stat .cap{font-size:10.5px;color:var(--ink-soft);margin-top:3px;line-height:1.3}
+
+.autosave-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft)}
+.autosave-toggle{position:relative;display:inline-flex;cursor:pointer}
+.autosave-toggle input{position:absolute;opacity:0;width:36px;height:20px;margin:0;cursor:pointer}
+.toggle-track{width:36px;height:20px;border-radius:20px;background:var(--border);display:inline-flex;align-items:center;flex-shrink:0;transition:background .15s ease}
+.toggle-thumb{width:16px;height:16px;margin-left:2px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(43,51,36,.25);transition:transform .15s ease}
+.autosave-toggle input:checked ~ .toggle-track{background:var(--sage-dark)}
+.autosave-toggle input:checked ~ .toggle-track .toggle-thumb{transform:translateX(16px)}
+
+.actions{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:6px}
+.actions-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
+.hidden{display:none!important}
+footer.page{text-align:center;padding:24px 20px 40px;font-size:12px;color:var(--ink-soft)}
+.pill{display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;color:#6E4A16;background:#F3E3C2;padding:5px 11px;border-radius:999px;white-space:nowrap}
+.note-box{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:14px 16px;font-size:12px;color:var(--ink-soft);line-height:1.6}
+.alert-box{display:flex;align-items:flex-start;gap:10px;margin-top:14px;padding:12px 14px;background:var(--red-bg);border:1px solid rgba(179,38,30,.28);border-radius:var(--radius-sm);color:#8C1F19;font-size:13px;line-height:1.5}
+.alert-box.warn{background:var(--amber-bg);border-color:rgba(185,133,46,.35);color:#7A5A1E}
+.alert-box .icon{flex-shrink:0;width:18px;height:18px;margin-top:1px;border-radius:50%;background:var(--red);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.alert-box.warn .icon{background:var(--amber)}
+.migration-note{background:linear-gradient(180deg,var(--surface) 0%,var(--surface-2) 100%);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:14px 16px;font-size:12px;color:var(--ink-soft);line-height:1.6;margin-bottom:16px}
+.migration-note b{color:var(--ink)}
+@media(max-width:640px){.top-inner{padding:20px 16px}main{padding:16px 12px 50px}.card-head,.card-body{padding-left:16px;padding-right:16px}}
+
+/* ======================================================================
+   IMPRESSÃO
+   Regra geral: só sai no papel o que é dado. Navegação, botões, campos de
+   busca/filtro e a dica flutuante (tooltip) somem. Tabelas que hoje têm
+   altura limitada com rolagem (.table-scroll) perdem esse limite na
+   impressão — senão as linhas fora da área visível na tela seriam
+   cortadas e não sairiam no papel.
+   ====================================================================== */
+@media print{
+  @page{ size: landscape; margin: 12mm; }
+  body{ background:#fff !important; }
+  header.top{ background:#fff !important; color:#000 !important; border-bottom:2px solid #000; box-shadow:none; }
+  header.top::after{ display:none; }
+  .eyebrow, .sus-mark{ color:#000 !important; }
+  .subtitle{ color:#333 !important; }
+
+  nav.tabs, .actions, .autosave-row, .search-bar, .migration-note,
+  button, input[type=file], .link-btn, .js-tooltip, #draftBanner,
+  #inputImportBackup, #inputImportEstoqueCSV{ display:none !important; }
+
+  main{ padding:0; max-width:none; }
+  .card{ box-shadow:none; border:1px solid #999; margin-bottom:14px; }
+  .card-head{ background:#fff !important; }
+  .card-head p.desc{ display:none; } /* explicações de uso não precisam sair no papel */
+
+  /* remove o teto de altura das tabelas — sem isso, linhas fora da área
+     visível na tela ficam de fora da impressão */
+  .table-scroll{ max-height:none !important; overflow:visible !important; border:none; }
+  table{ font-size:10px; }
+  thead{ display:table-header-group; } /* repete o cabeçalho em cada página */
+  tr{ page-break-inside:avoid; break-inside:avoid; }
+  td, th{ padding:4px 3px; }
+
+  /* campos de dado (não são "controles" a esconder, são o próprio conteúdo) */
+  td input[type=number], td input[type=text]{
+    border:none; background:none; color:#000; padding:0; width:auto; min-width:34px;
+  }
+  td input[type=checkbox]{ transform:scale(1.1); }
+
+  .step-badge{ box-shadow:none; }
+  .status-badge, .term-badge, .trend, .abc-badge{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="eyebrow"><span class="sus-mark">SUS</span> Sistema Único de Saúde</div>
+    <h1 class="title">Gestão de Almoxarifado Farmacêutico</h1>
+    <p class="subtitle">Cadastro de itens com dados de programação, motor de cálculo oficial CEAF/SIGAF e fluxo guiado de pedido, todos compartilhando os mesmos dados.</p>
+  </div>
+</header>
+<main>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="dashboard">📊 Painel</button>
+    <button class="tab-btn" data-tab="import">📥 Importação</button>
+    <button class="tab-btn" data-tab="param">🛠 Parametrização</button>
+    <button class="tab-btn" data-tab="pedido">🧮 Pedido &amp; Programação</button>
+    <button class="tab-btn" data-tab="export">📤 Exportações</button>
+    <button class="tab-btn" data-tab="settings">⚙️ Configurações</button>
+  </nav>
+
+  <!-- ============================================================ PAINEL ============================================================ -->
+  <section id="tab-dashboard" class="tab-content">
+
+    <!-- COMECE POR AQUI -->
+    <div class="card" id="comecePorAquiCard" style="border-width:2px;">
+      <div class="card-body" id="primeiraVezBox">
+        <div style="display:flex;align-items:flex-start;gap:14px;">
+          <span class="step-badge" style="font-size:18px;">👋</span>
+          <div style="flex:1;">
+            <h2 style="font-family:var(--serif);font-size:19px;margin:0 0 6px;">Bem-vindo! Vamos começar em 3 passos.</h2>
+            <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px;max-width:680px;">Este sistema ainda não tem nenhum dado carregado. Siga a ordem abaixo — cada passo alimenta o seguinte.</p>
+            <div class="grid g2" style="gap:14px;">
+              <div class="note-box" style="display:flex;flex-direction:column;gap:8px;">
+                <div><span class="pill">Passo 1</span></div>
+                <div><b>Importe seus dados</b><br>Traga as planilhas de estoque, dispensação e agendamento do SIGAF.</div>
+                <button class="primary small" onclick="switchTab('import')" style="align-self:flex-start;">Ir para Importação →</button>
+              </div>
+              <div class="note-box" style="display:flex;flex-direction:column;gap:8px;">
+                <div><span class="pill">Passo 2</span></div>
+                <div><b>Confira e ajuste</b><br>Marque os itens do pedido atual e corrija o que precisar à mão.</div>
+                <button class="ghost small" onclick="switchTab('param')" style="align-self:flex-start;">Ir para Parametrização →</button>
+              </div>
+              <div class="note-box" style="display:flex;flex-direction:column;gap:8px;">
+                <div><span class="pill">Passo 3</span></div>
+                <div><b>Volte aqui</b><br>O Painel vai se preencher sozinho com os indicadores e o que precisa de atenção.</div>
+                <button class="ghost small" onclick="renderDashboard()" style="align-self:flex-start;">Atualizar Painel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body hidden" id="resumoAcaoBox">
+        <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+          <span class="step-badge" id="statusGeralBadge" style="font-size:18px;">🟢</span>
+          <div style="flex:1;min-width:240px;">
+            <div class="label" id="statusGeralLabel">Situação geral</div>
+            <h2 style="font-family:var(--serif);font-size:19px;margin:2px 0 12px;" id="statusGeralTitulo">Tudo em ordem</h2>
+            <div id="oQueFazerLista" style="display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="migration-note">
+      <b>Painel único:</b> todos os indicadores e informações gerenciais do sistema — status de risco, linha do
+      tempo da cobertura, ranking de itens críticos, dados reais de pacientes e medicamentos dispensados, e o
+      detalhamento completo — vivem apenas aqui. As demais abas são telas de trabalho: <b>Importação</b> carrega
+      dados de planilhas do SIGAF, <b>Parametrização</b> reúne os campos editáveis à mão, e <b>Pedido &amp;
+      Programação</b> mostra o cálculo e a conferência final — sem números gerenciais duplicados em nenhuma delas.
+    </div>
+
+    <!-- KPIs -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">✓</span>
+        <div><div class="label">Visão geral</div><h2>Situação atual da programação</h2>
+        <p class="desc">Calculado a partir dos itens marcados como "No pedido" em Parametrização, com o período definido na mesma aba.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div class="stat-row">
+          <div class="stat accent-red" onclick="filterPainelDetail('red')"><div class="num" id="dashRed">0</div><div class="cap">🔴 Risco de desabastecimento</div></div>
+          <div class="stat accent-amber" onclick="filterPainelDetail('amber')"><div class="num" id="dashAmber">0</div><div class="cap">🟡 Estoque excedente</div></div>
+          <div class="stat" onclick="filterPainelDetail('green')"><div class="num" id="dashGreen">0</div><div class="cap">🟢 Adequados</div></div>
+          <div class="stat" onclick="filterPainelDetail('gray')"><div class="num" id="dashGray">0</div><div class="cap">⚪ Sem dados</div></div>
+          <div class="stat accent-blue" onclick="filterPainelDetail('')"><div class="num" id="dashSelected">0</div><div class="cap">Itens no pedido atual</div></div>
+          <div class="stat" onclick="switchTab('param')"><div class="num" id="dashTotal">315</div><div class="cap">Total no catálogo</div></div>
+        </div>
+        <div class="grid g2">
+          <div class="note-box"><b>Termolábil no catálogo:</b> <span id="dashFrio">0</span> itens.</div>
+          <div class="note-box"><b>Termoestável no catálogo:</b> <span id="dashAmb">0</span> itens.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linha do tempo -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">📆</span>
+        <div><div class="label">Período vigente</div><h2>Linha do tempo da cobertura</h2>
+        <p class="desc">Datas definidas na aba Parametrização.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="timeline-track"><div class="timeline-fill" id="timelineFill"></div>
+            <div class="timeline-marker frio" id="markerFrio"></div>
+            <div class="timeline-marker amb" id="markerAmb"></div></div>
+          <div class="timeline-labels">
+            <span>Análise: <b id="lblAnalise">—</b></span>
+            <span>Início: <b id="lblInicio">—</b></span>
+            <span>Entrega termolábil: <b id="lblEntregaFrio">—</b></span>
+            <span>Entrega termoestável: <b id="lblEntregaAmb">—</b></span>
+            <span>Fim: <b id="lblFim">—</b></span>
+          </div>
+        </div>
+        <div class="alert-box warn hidden" id="periodoIncompletoAlert" style="margin-top:16px;">
+          <span class="icon">!</span>
+          <div>O período de cobertura ainda não está completo ou válido (aba Parametrização) — por isso os cálculos abaixo tratam os itens como "Sem dados".</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status da importação -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">📥</span>
+        <div><div class="label">Frescor dos dados</div><h2>Status da importação</h2>
+        <p class="desc">Última vez que cada fonte de dados foi importada nesta sessão, na aba Importação. Ajuda a saber se algo está desatualizado antes de fechar o pedido.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div class="stat-row" id="statusImportGrid"></div>
+      </div>
+    </div>
+
+    <!-- Risco por categoria térmica -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">🌡</span>
+        <div><div class="label">Recorte térmico</div><h2>Risco por categoria térmica</h2>
+        <p class="desc">Mesma contagem de status, separada por termolábil (cadeia de frio) e termoestável.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div class="indicators-grid">
+          <div class="indicator-group">
+            <div class="legend-subtitle"><span class="term-badge">termolábil</span></div>
+            <div class="legend-row">
+              <div class="legend-stat st-red"><div><div class="num" id="catFrioRed">0</div><div class="cap">🔴 Risco</div></div></div>
+              <div class="legend-stat st-amber"><div><div class="num" id="catFrioAmber">0</div><div class="cap">🟡 Excedente</div></div></div>
+              <div class="legend-stat st-green"><div><div class="num" id="catFrioGreen">0</div><div class="cap">🟢 Adequado</div></div></div>
+              <div class="legend-stat st-gray"><div><div class="num" id="catFrioGray">0</div><div class="cap">⚪ Sem dados</div></div></div>
+            </div>
+          </div>
+          <div class="indicator-divider"></div>
+          <div class="indicator-group">
+            <div class="legend-subtitle"><span class="term-badge" style="background:var(--amber-bg);color:var(--amber);border-color:rgba(185,133,46,.35)">termoestável</span></div>
+            <div class="legend-row">
+              <div class="legend-stat st-red"><div><div class="num" id="catAmbRed">0</div><div class="cap">🔴 Risco</div></div></div>
+              <div class="legend-stat st-amber"><div><div class="num" id="catAmbAmber">0</div><div class="cap">🟡 Excedente</div></div></div>
+              <div class="legend-stat st-green"><div><div class="num" id="catAmbGreen">0</div><div class="cap">🟢 Adequado</div></div></div>
+              <div class="legend-stat st-gray"><div><div class="num" id="catAmbGray">0</div><div class="cap">⚪ Sem dados</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Itens que exigem atenção -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">⚠</span>
+        <div><div class="label">Priorização</div><h2>Itens que exigem atenção</h2>
+        <p class="desc">Os itens mais urgentes primeiro: menor estimativa de dias até a ruptura (vermelhos) e maior excedente sobre a necessidade (amarelos).</p></div>
+      </div></div>
+      <div class="card-body">
+        <div class="indicators-grid">
+          <div class="indicator-group">
+            <div class="legend-subtitle">🔴 Maior risco de ruptura</div>
+            <div class="table-scroll" style="max-height:340px;">
+              <table><thead><tr><th>Item</th><th>Dias até ruptura</th><th>Necessária</th></tr></thead>
+              <tbody id="criticosBody"><tr class="empty-row"><td colspan="3">Nenhum item em risco.</td></tr></tbody></table>
+            </div>
+          </div>
+          <div class="indicator-divider"></div>
+          <div class="indicator-group">
+            <div class="legend-subtitle">🟡 Maior excedente</div>
+            <div class="table-scroll" style="max-height:340px;">
+              <table><thead><tr><th>Item</th><th>Excedente</th><th>Estoque futuro</th></tr></thead>
+              <tbody id="excedentesBody"><tr class="empty-row"><td colspan="3">Nenhum item excedente.</td></tr></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Curva ABC de consumo -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">📐</span>
+        <div><div class="label">Priorização</div><h2>Curva ABC de consumo</h2>
+        <p class="desc">Classificação pelo peso do consumo médio mensal (CMM) de cada item no consumo total do catálogo, regra 80/15/5: classe A são os itens que, somados, respondem por 80% do consumo — vale mais atenção neles do que nos itens de classe C, que pesam pouco individualmente. Considera todos os itens com consumo registrado, não só os do pedido atual.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div id="semCurvaABC" class="note-box hidden">Nenhum item com consumo (M1, M2 ou M3) preenchido ainda — a curva ABC aparece assim que houver dados de consumo, seja digitados em Parametrização ou importados.</div>
+        <div id="comCurvaABC">
+          <div class="stat-row">
+            <div class="stat accent-red"><div class="num" id="abcCountA">0</div><div class="cap">Classe A — prioridade máxima</div></div>
+            <div class="stat accent-amber"><div class="num" id="abcCountB">0</div><div class="cap">Classe B</div></div>
+            <div class="stat"><div class="num" id="abcCountC">0</div><div class="cap">Classe C — baixo impacto</div></div>
+          </div>
+          <div class="subsection-head" style="margin-top:6px;"><span class="dash"></span><h3>Itens de classe A (maior peso no consumo total)</h3></div>
+          <div class="table-scroll" style="max-height:320px;">
+            <table><thead><tr><th>Item</th><th>CMM</th><th>Tendência</th><th>% do consumo total</th></tr></thead>
+            <tbody id="abcListBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vencimento e perdas -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge amber">⏳</span>
+        <div><div class="label">Prevenção de desperdício</div><h2>Vencimento e perdas</h2>
+        <p class="desc">Vem do campo "Vencim. próx." de cada item (preenchido manualmente ou pela importação da planilha de Almoxarifado). Considera todos os itens do catálogo com essa quantidade preenchida, não só os do pedido atual.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div id="semVencimento" class="note-box hidden">Nenhum item com quantidade em "Vencim. próx." preenchida ainda — edite em Parametrização ou importe a planilha de Almoxarifado na aba Importação.</div>
+        <div id="comVencimento">
+          <div class="stat-row">
+            <div class="stat accent-amber"><div class="num" id="vencItensCount">0</div><div class="cap">Itens com estoque próximo do vencimento</div></div>
+            <div class="stat accent-amber"><div class="num" id="vencUnidades">0</div><div class="cap">Unidades próximas do vencimento</div></div>
+            <div class="stat accent-red"><div class="num" id="vencPerdaEstimada">0</div><div class="cap">Perda estimada (unidades)</div></div>
+          </div>
+
+          <div class="subsection-head" style="margin-top:6px;"><span class="dash"></span><h3>Itens próximos ao vencimento</h3></div>
+          <div class="table-scroll" style="max-height:300px;margin-bottom:20px;">
+            <table><thead><tr><th>Item</th><th>Qtd. próxima do vencimento</th><th>% do estoque atual</th></tr></thead>
+            <tbody id="vencListaBody"></tbody></table>
+          </div>
+
+          <div class="subsection-head"><span class="dash"></span><h3>Perda estimada por vencimento</h3></div>
+          <p class="desc" style="margin:-4px 0 12px;">
+            Estimativa simplificada: da quantidade próxima do vencimento, quanto o consumo atual <b>não</b> vai conseguir usar a tempo. Como o sistema não guarda a data exata de validade de cada lote (só a quantidade dentro da janela configurada na importação), assuma um prazo médio até o vencimento desses lotes para calcular:
+            <span style="display:inline-flex;align-items:center;gap:6px;margin-left:4px;">
+              <input type="number" id="prazoVencimentoDias" min="1" value="30" style="width:70px;height:26px;padding:0 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;" onchange="renderVencimentoPerdas()"> dias
+            </span>
+          </p>
+          <div class="table-scroll" style="max-height:300px;">
+            <table><thead><tr><th>Item</th><th>Próximo do vencimento</th><th>Dá tempo de consumir</th><th>Perda estimada</th></tr></thead>
+            <tbody id="perdaListaBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalhamento completo -->
+    <div class="card" id="painelDetailCard">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">📄</span>
+        <div><div class="label">Detalhamento</div><h2>Todos os itens do pedido atual</h2>
+        <p class="desc">Lista completa e exportável, calculada pelo mesmo motor CEAF/SIGAF usado em Pedido &amp; Programação.</p></div>
+      </div></div>
+      <div class="card-body" style="padding-top:0;">
+        <div class="search-bar" style="padding-top:16px;">
+          <input type="search" id="painelDetailSearch" placeholder="Buscar por nome ou código…" oninput="debouncedRenderPainelDetail()">
+          <select id="painelDetailStatus" onchange="renderPainelDetail()">
+            <option value="">Todos os status</option>
+            <option value="red">🔴 Risco de desabastecimento</option>
+            <option value="amber">🟡 Excedente</option>
+            <option value="green">🟢 Adequado</option>
+            <option value="gray">⚪ Sem dados</option>
+          </select>
+          <select id="painelDetailCat" onchange="renderPainelDetail()">
+            <option value="">Todas as categorias</option>
+            <option value="termolabil">Termolábil</option>
+            <option value="termoestavel">Termoestável</option>
+          </select>
+          <button class="ghost" onclick="exportPainelDetailCSV()">Exportar CSV</button>
+          <button class="ghost" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+        <div class="table-scroll" style="max-height:520px;">
+          <table id="painelDetailTable">
+            <thead><tr><th>Status</th><th>Item</th><th>Código</th><th>Categ.</th><th>CMM</th><th>Consumo médio/paciente<span class="hint" data-tip="Unidades do medicamento consumidas por paciente, em média — vem da planilha Consolidado importada em Importação. Fica em branco se esse arquivo ainda não foi importado.">i</span></th><th>Necessária</th><th>Sugerida</th></tr></thead>
+            <tbody id="painelDetailBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicadores de atendimento e almoxarifado (dados reais importados: Qtd. Pacientes / Qtd. Medicamento) -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">🧑‍⚕️</span>
+        <div><div class="label">Dados reais de uso</div><h2>Pacientes e medicamentos dispensados</h2>
+        <p class="desc">Vem dos arquivos importados na aba Importação (dispensações, agendamentos e estoque do almoxarifado) — independe de quais itens estão marcados "No pedido"; reflete o uso real do serviço.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div id="semIndicadoresUso" class="note-box hidden">Nenhum item tem dados de atendimento importados ainda. Vá para a aba <b>Importação</b> e carregue uma planilha de Atendimento, Agendamento ou Almoxarifado.</div>
+        <div id="comIndicadoresUso">
+          <div class="stat-row">
+            <div class="stat"><div class="num" id="usoItensComDados">0</div><div class="cap">Itens com dados de uso importados</div></div>
+            <div class="stat accent-blue"><div class="num" id="usoPacientesAgendados">0</div><div class="cap">Pacientes com retorno agendado</div></div>
+            <div class="stat"><div class="num" id="usoPacientesAtendidos">0</div><div class="cap">Pacientes atendidos/mês (média)</div></div>
+            <div class="stat"><div class="num" id="usoMedicamentosMes">0</div><div class="cap">Unidades dispensadas no mês</div></div>
+          </div>
+          <div class="subsection-head" style="margin-top:6px;"><span class="dash"></span><h3>Itens com risco de não atender à agenda</h3></div>
+          <p class="desc" style="margin:-4px 0 12px;">Itens em que mais pacientes estão agendados do que o estoque atual consegue cobrir — vale checar antes desses atendimentos. <span id="usoDeficitCount"></span></p>
+          <div class="table-scroll" style="max-height:320px;">
+            <table><thead><tr><th>Item</th><th>Agendados</th><th>Estoque cobre</th><th>Déficit</th></tr></thead>
+            <tbody id="usoDeficitBody"><tr class="empty-row"><td colspan="4">Nenhum item com déficit identificado.</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fornecimento por tipo de medicamento e município (mês) -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">🗺</span>
+        <div><div class="label">Dados reais de uso</div><h2>Medicamentos fornecidos por tipo e município, no mês</h2>
+        <p class="desc">Quantidade dispensada no mês mais recente coberto pela planilha de Atendimento importada, agrupada por medicamento (com sua categoria térmica) e pelo município de residência do paciente.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div id="semFornecimentoMunicipio" class="note-box">Nenhum dado de fornecimento por município importado ainda. Vá para a aba <b>Importação</b> e carregue a planilha de Atendimento.</div>
+        <div id="comFornecimentoMunicipio" class="hidden">
+          <div class="stat-row">
+            <div class="stat"><div class="num" id="fmTotalMes">0</div><div class="cap">Unidades fornecidas no mês</div></div>
+            <div class="stat"><div class="num" id="fmMunicipios">0</div><div class="cap">Municípios atendidos</div></div>
+            <div class="stat"><div class="num" id="fmMedicamentos">0</div><div class="cap">Medicamentos distintos fornecidos</div></div>
+          </div>
+
+          <div class="subsection-head" style="margin-top:6px;"><span class="dash"></span><h3>Municípios com maior fornecimento no mês</h3></div>
+          <div class="table-scroll" style="max-height:280px;margin-bottom:20px;">
+            <table><thead><tr><th>Município</th><th>Unidades fornecidas</th><th>Medicamentos distintos</th></tr></thead>
+            <tbody id="fmRankingBody"></tbody></table>
+          </div>
+
+          <div class="subsection-head"><span class="dash"></span><h3>Detalhamento por medicamento e município</h3></div>
+          <div class="search-bar" style="padding-top:0;">
+            <input type="search" id="fmSearch" placeholder="Buscar por nome do medicamento…" oninput="debouncedRenderFornecimentoMunicipio()">
+            <select id="fmMunicipioFiltro" onchange="renderFornecimentoMunicipio()"><option value="">Todos os municípios</option></select>
+            <select id="fmCategoriaFiltro" onchange="renderFornecimentoMunicipio()">
+              <option value="">Todas as categorias</option>
+              <option value="termolabil">Termolábil</option>
+              <option value="termoestavel">Termoestável</option>
+            </select>
+            <button class="ghost" onclick="exportFornecimentoMunicipioCSV()">Exportar CSV</button>
+          </div>
+          <div id="fmDetailNote" style="font-size:12px;color:var(--ink-soft);margin:8px 0;"></div>
+          <div class="table-scroll" style="max-height:420px;">
+            <table><thead><tr><th>Medicamento</th><th>Categ.</th><th>Município</th><th>Unidades fornecidas</th></tr></thead>
+            <tbody id="fmDetailBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ IMPORTAÇÃO ============================================================ -->
+  <section id="tab-import" class="tab-content hidden">
+    <div class="migration-note">
+      <b>Como este sistema espera receber dados, na prática:</b> as planilhas de <b>Atendimento</b> (dispensações já
+      realizadas), <b>Agendamento</b> (retornos futuros marcados) e <b>Almoxarifado</b> (posição de estoque) são
+      exportadas periodicamente do SIGAF/CEAF e devem ser importadas aqui a cada atualização. Uma planilha já
+      <b>consolidada</b> (com os indicadores por medicamento já calculados) também é aceita, para quem prefere
+      montar esse resumo em outra ferramenta antes de trazer para o sistema.
+    </div>
+
+    <!-- 1. Atendimento -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">1</span>
+        <div><div class="label">Consumo real</div><h2>Dispensações (planilha "Atendimento")</h2>
+        <p class="desc">Um registro por dispensação realizada. Calcula o consumo mensal (M1–M3) automaticamente a partir das 3 competências mais recentes encontradas no arquivo, e a média de pacientes atendidos por mês — preenchendo esses campos em Parametrização e os indicadores do Painel. Se o arquivo trouxer o município do paciente, também monta o card "Medicamentos fornecidos por tipo e município" do Painel, para o mês mais recente encontrado. Itens são casados pelo <b>nome do medicamento</b> (coluna "Medicamento/Produto (Descrição Genérica)").</p>
+        <p class="desc">Se o arquivo cobrir menos de 3 meses, só os meses disponíveis são preenchidos (os mais recentes) — o CMM (consumo médio mensal) fica proporcionalmente mais baixo até você importar um arquivo com o histórico completo.</p>
+        <p class="desc">Colunas esperadas: <code>Data Dispensação</code>, <code>Medicamento/Produto (Descrição Genérica)</code>, <code>Quantidade do Medicamento ou Produto</code>, um identificador de paciente (<code>CNS do Paciente</code> ou <code>Nome do Paciente</code>) e, para o card por município, <code>Município de Residência do Paciente</code>.</p>
+      </div></div>
+      <div class="card-body">
+        <button class="primary" onclick="document.getElementById('inputAtendimento').click()">Selecionar arquivo (.xlsx, .csv)</button>
+        <input type="file" id="inputAtendimento" accept=".xlsx,.xls,.csv" class="hidden">
+        <div id="resultAtendimento" class="hidden" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- 2. Agendamento -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">2</span>
+        <div><div class="label">Demanda futura</div><h2>Agendamentos (planilha "Agendamento")</h2>
+        <p class="desc">Um registro por retorno marcado. Conta quantos pacientes distintos têm retorno agendado a partir de hoje, por medicamento — esse número é a "Qtd. Pacientes" agendados que aparece no Painel e alimenta o alerta de déficit de agenda. Casamento por <b>nome do medicamento</b>.</p>
+        <p class="desc">Colunas esperadas: <code>Data Retorno</code>, <code>Medicamento/Produto</code>, e um identificador de paciente (<code>CPF</code> ou <code>Paciente</code>).</p>
+      </div></div>
+      <div class="card-body">
+        <button class="primary" onclick="document.getElementById('inputAgendamento').click()">Selecionar arquivo (.xlsx, .csv)</button>
+        <input type="file" id="inputAgendamento" accept=".xlsx,.xls,.csv" class="hidden">
+        <div id="resultAgendamento" class="hidden" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- 3. Almoxarifado -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">3</span>
+        <div><div class="label">Posição de estoque</div><h2>Almoxarifado (planilha "Almoxarifado")</h2>
+        <p class="desc">Um registro por lote em estoque. Soma a quantidade disponível por medicamento (ignorando lotes bloqueados) e atualiza o campo "Estoque disp." em Parametrização; lotes que vencem dentro da janela abaixo entram automaticamente em "Vencim. próx.". Casamento por <b>código SIGAF</b> — o mais confiável dos quatro, porque o código aparece igual nesta planilha e no catálogo.</p>
+        <p class="desc">Colunas esperadas: <code>Cod SIGAF Medicamento/Produto</code>, <code>Quantidade em Estoque</code>, <code>Validade</code>, <code>Bloqueado</code>.</p>
+      </div></div>
+      <div class="card-body">
+        <div class="field" style="max-width:260px;margin-bottom:14px;">
+          <label>Considerar "vencimento próximo" em até<span class="hint" data-tip="Lotes cuja validade cai dentro deste número de dias, a partir da data de análise (ou de hoje), somam para o campo Vencim. próx. de cada item.">i</span></label>
+          <input type="number" id="almoxJanelaVencimento" min="1" value="90"> dias
+        </div>
+        <button class="primary" onclick="document.getElementById('inputAlmoxarifado').click()">Selecionar arquivo (.xlsx, .csv)</button>
+        <input type="file" id="inputAlmoxarifado" accept=".xlsx,.xls,.csv" class="hidden">
+        <div id="resultAlmoxarifado" class="hidden" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- 4. Consolidado -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">4</span>
+        <div><div class="label">Opcional</div><h2>Indicadores já consolidados por medicamento</h2>
+        <p class="desc">Alternativa às três planilhas acima, para quem já tem os indicadores por medicamento prontos em uma única aba/arquivo. Preenche diretamente os indicadores de pacientes e medicamentos do Painel. Casamento por <b>nome do medicamento</b>.</p>
+        <p class="desc">Colunas esperadas (nomes flexíveis): nome do medicamento na 1ª coluna, e colunas contendo os termos "pacientes agendados", "atendidos que o estoque", "média de pacientes atendidos", "média de medicamentos por paciente" e "quantidade de medicamentos atendidos no mês".</p>
+      </div></div>
+      <div class="card-body">
+        <button class="primary" onclick="document.getElementById('inputConsolidado').click()">Selecionar arquivo (.xlsx, .csv)</button>
+        <input type="file" id="inputConsolidado" accept=".xlsx,.xls,.csv" class="hidden">
+        <div id="resultConsolidado" class="hidden" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- 5. CSV manual simplificado -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">5</span>
+        <div><div class="label">Atalho manual</div><h2>Estoque/consumo simplificado (CSV por código)</h2>
+        <p class="desc">Para atualizações rápidas e pontuais sem passar pelo formato oficial do SIGAF: um CSV só com código e os campos que você quiser atualizar (estoque, consumo M1–M3, reservado, vencimento, a receber). Casamento por <b>código SIGAF</b>.</p>
+      </div></div>
+      <div class="card-body">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+          <button class="ghost" onclick="document.getElementById('inputImportEstoqueCSV').click()">Selecionar CSV</button>
+          <button class="ghost" onclick="downloadEstoqueCSVTemplate()">Baixar modelo</button>
+          <input type="file" id="inputImportEstoqueCSV" accept=".csv,text/csv" class="hidden">
+        </div>
+        <div id="importCsvResult" class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- Controle de importação -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">🕓</span>
+        <div><div class="label">Auditoria</div><h2>Controle de importações</h2>
+        <p class="desc">Histórico de todos os arquivos processados nesta sessão, mais recentes primeiro. Fica salvo junto com o rascunho automático.</p></div>
+      </div><button class="ghost small" onclick="limparHistoricoImportacao()">Limpar histórico</button></div>
+      <div class="card-body">
+        <div class="table-scroll" style="max-height:340px;">
+          <table>
+            <thead><tr><th>Data/hora</th><th>Origem</th><th>Arquivo</th><th>Linhas lidas</th><th>Itens atualizados</th><th>Não encontrados</th></tr></thead>
+            <tbody id="importLogBody"><tr class="empty-row"><td colspan="6">Nenhuma importação registrada ainda nesta sessão.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ PARAMETRIZAÇÃO — todos os campos editáveis do sistema ============================================================ -->
+  <section id="tab-param" class="tab-content hidden">
+
+    <div class="card" id="draftBanner" style="display:none;border-color:rgba(185,133,46,.4);">
+      <div class="card-body" style="display:flex;align-items:flex-start;gap:14px;">
+        <span class="step-badge amber">⚠</span>
+        <div style="flex:1;">
+          <strong>Rascunho salvo automaticamente restaurado.</strong>
+          <div id="draftBannerInfo" style="color:var(--ink-soft);font-size:12.5px;margin-top:2px;"></div>
+        </div>
+        <button class="ghost small" onclick="descartarRascunho()">Descartar e começar do zero</button>
+      </div>
+    </div>
+
+    <div class="migration-note">
+      <b>Aba única de edição:</b> todo campo que pode ser digitado ou marcado no sistema — dados do
+      estabelecimento, período de cobertura, seleção de itens e seus dados de consumo/estoque, e o ajuste
+      manual da programação — vive aqui. A aba Pedido &amp; Programação só mostra os resultados calculados
+      a partir do que foi preenchido nesta aba, e o Painel só mostra indicadores agregados.
+    </div>
+
+    <!-- Estabelecimento e período (antiga Etapa 1 do Pedido) -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">1</span>
+        <div><div class="label">Dados de entrada</div><h2>Estabelecimento e período de cobertura</h2>
+        <p class="desc">Estes dados alimentam o motor de cálculo oficial CEAF/SIGAF usado em todas as outras abas.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div class="subsection">
+          <div class="subsection-head"><span class="dash"></span><h3>Estabelecimento</h3></div>
+          <div class="grid">
+            <div class="field"><label>CNES <span class="hint" data-tip="Cadastro Nacional de Estabelecimentos de Saúde, 7 dígitos.">i</span></label>
+              <input type="text" id="estabCnes" inputmode="numeric" maxlength="7" placeholder="0000000"></div>
+            <div class="field field-lg"><label>Nome do estabelecimento</label>
+              <input type="text" id="estabNome" placeholder="Nome do estabelecimento de saúde"></div>
+            <div class="field field-lg"><label>Responsável pela programação</label>
+              <input type="text" id="estabResponsavel" placeholder="Nome completo do responsável"></div>
+            <div class="field"><label>Email</label><input type="email" id="estabEmail" placeholder="nome@exemplo.com"></div>
+          </div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-head"><span class="dash"></span><h3>Período de cobertura</h3></div>
+          <div class="grid">
+            <div class="field"><label>Data de análise do estoque<span class="required-mark">*</span>
+              <span class="hint" data-tip="Data em que o estoque foi verificado.">i</span></label>
+              <input type="date" id="dataAnalise"></div>
+            <div class="field"><label>Data início de cobertura<span class="required-mark">*</span>
+              <span class="hint" data-tip="Vem preenchida com a data de hoje por padrão — edite se o período de cobertura começar em outro dia.">i</span></label>
+              <input type="date" id="dataInicio"></div>
+            <div class="field"><label>Data fim de cobertura<span class="required-mark">*</span>
+              <span class="hint" data-tip="Vem preenchida com o último dia do mês seguinte por padrão — edite se quiser um período mais curto ou mais longo.">i</span></label>
+              <input type="date" id="dataFim"></div>
+          </div>
+          <div class="grid" style="margin-top:14px;">
+            <div class="field"><label><span class="term-badge">termolábil</span>&nbsp;Entrega prevista<span class="required-mark">*</span></label>
+              <input type="date" id="dataEntregaFrio"></div>
+            <div class="field"><label><span class="term-badge" style="background:var(--amber-bg);color:var(--amber);border-color:rgba(185,133,46,.35)">termoestável</span>&nbsp;Entrega prevista<span class="required-mark">*</span></label>
+              <input type="date" id="dataEntregaAmb"></div>
+          </div>
+          <div class="alert-box" id="dateAlert" style="display:none;"><span class="icon">!</span>
+            <div><strong>Verifique as datas informadas:</strong><ul id="dateAlertList" style="margin:4px 0 0;padding-left:18px;"></ul></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Itens: seleção + dados de programação + ajuste manual (antiga Itens Cadastrados + coluna "ajuste" do Pedido) -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">2</span>
+        <div><div class="label">Cadastro único</div><h2>Itens: seleção e dados de programação</h2>
+        <p class="desc">Marque "No pedido" para incluir o item. Preencha consumo, estoque e demais campos — a "Necessária" já mostra o cálculo oficial em tempo real; use "Ajuste manual" só quando precisar substituir esse valor por um número diferente. Para carregar estoque e consumo em lote a partir de planilhas do SIGAF, use a aba <b>Importação</b>.</p></div>
+      </div></div>
+      <div class="card-body" style="padding-top:0;padding-bottom:0;">
+        <div class="search-bar" style="padding-top:16px;">
+          <input type="search" id="itemsSearch" placeholder="Buscar por nome ou código SIGAF…" oninput="debouncedRenderItemsTable()">
+          <select id="itemsCatFilter" onchange="renderItemsTable()">
+            <option value="">Todas as categorias</option>
+            <option value="termolabil">Termolábil</option>
+            <option value="termoestavel">Termoestável</option>
+          </select>
+          <select id="itemsSelFilter" onchange="renderItemsTable()">
+            <option value="">Selecionados e não selecionados</option>
+            <option value="1">Somente no pedido atual</option>
+            <option value="0">Somente fora do pedido atual</option>
+          </select>
+        </div>
+      </div>
+      <div class="card-body" style="padding-top:0;">
+        <div class="field-lg" style="margin-bottom:12px;font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <span id="itemsCount">315 itens</span>
+          <span>·</span>
+          <button class="link-btn" onclick="exportItemsCSV()">Exportar itens (CSV)</button>
+          <span>·</span>
+          <button class="link-btn" onclick="switchTab('import')">Importar dados em lote (aba Importação)</button>
+        </div>
+        <div class="table-scroll">
+          <table id="itemsTable">
+            <thead>
+              <tr>
+                <th style="width:26px;">No pedido</th>
+                <th>ABC<span class="hint" data-tip="Classificação pelo peso do consumo médio mensal (CMM) deste item no consumo total do catálogo: A = itens que somam 80% do consumo, B = os próximos 15%, C = os 5% restantes. Fica em branco se o item não tem consumo registrado.">i</span></th>
+                <th>Item</th>
+                <th>Código</th>
+                <th>Categ.</th>
+                <th>Emb. (un)</th>
+                <th>Consumo M1</th>
+                <th>Consumo M2</th>
+                <th>Consumo M3</th>
+                <th>Tendência<span class="hint" data-tip="Compara o consumo mais recente (M3) com o mais antigo dos três (M1). ↑ alta de 20% ou mais, ↓ queda de 20% ou mais — um alerta antecipado, antes que o cálculo oficial (que usa a média dos três) reaja.">i</span></th>
+                <th>Estoque disp.</th>
+                <th>Cobertura (dias)<span class="hint" data-tip="Quantos dias o estoque disponível dura no ritmo de consumo atual (estoque ÷ consumo diário). Vermelho: menos dias que o prazo até a próxima entrega. Amarelo: até 50% a mais que esse prazo. Verde: folga confortável.">i</span></th>
+                <th>Reservado</th>
+                <th>Vencim. próx.</th>
+                <th>A receber</th>
+                <th>Margem seg. (%)</th>
+                <th style="width:100px;">Ruptura (desde)<span class="hint" data-tip="Marque quando o item estiver em falta. A data ao lado é sugerida automaticamente como hoje, mas edite se souber a data real em que a falta começou — ela alimenta o export 'Medicamentos em falta'.">i</span></th>
+                <th>Necessária<span class="hint" data-tip="Calculada automaticamente: (consumo × meses de cobertura) + estoque de segurança − estoque futuro.">i</span></th>
+                <th>Ajuste manual<span class="hint" data-tip="Opcional. Preencha só se quiser substituir a quantidade calculada por um valor diferente — fica marcado com um selo, junto com quem fez o ajuste.">i</span></th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ PEDIDO & PROGRAMAÇÃO (Fase 3 — fusão de "Gerar Pedido" + "Calculadora") ============================================================ -->
+  <section id="tab-pedido" class="tab-content hidden">
+
+    <!-- ETAPA 1 -->
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">1</span>
+        <div><div class="label">Etapa 1 · Cálculo</div><h2>Itens programados</h2>
+        <p class="desc">Resultado do cálculo oficial CEAF/SIGAF para os itens marcados como "No pedido" na aba <b>Parametrização</b> — esta tabela é somente leitura; para alterar qualquer valor, edite na Parametrização.</p></div>
+      </div></div>
+      <div class="card-body" style="padding-top:0;">
+        <div class="search-bar" style="padding-top:16px;">
+          <input type="search" id="pedidoSearch" placeholder="Filtrar itens do pedido, por nome ou código…" oninput="debouncedRenderPedidoTable()">
+          <span class="pill" id="pedidoCount">0 itens</span>
+          <button class="link-btn" onclick="switchTab('param')">+ Selecionar mais itens em Parametrização</button>
+        </div>
+        <div class="table-scroll">
+          <table id="pedidoTable">
+            <thead>
+              <tr>
+                <th>Item</th><th>Código</th>
+                <th>CMM<span class="hint" data-tip="Consumo Médio Mensal = (M1+M2+M3)/3.">i</span></th>
+                <th>Cobertura (dias)<span class="hint" data-tip="Quantos dias o estoque disponível dura no ritmo de consumo atual.">i</span></th>
+                <th>Tendência<span class="hint" data-tip="Compara o consumo mais recente (M3) com o mais antigo dos três (M1). Editável na aba Parametrização.">i</span></th>
+                <th>A consumir até entrega</th>
+                <th>Estoque futuro</th>
+                <th>Estoque segurança</th>
+                <th>Qtd. necessária</th>
+                <th>Programação</th>
+                <th>Sugerida (múltiplo emb.)</th>
+                <th>Excedente</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="pedidoBody">
+              <tr class="empty-row" id="pedidoEmptyRow"><td colspan="13">Nenhum item selecionado. Marque itens como "No pedido" na aba Parametrização.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ETAPA 2 -->
+    <div class="card resumo-card" style="border:2px solid var(--amber);">
+      <div class="card-head" style="background:var(--amber-bg);"><div class="card-head-main"><span class="step-badge amber">2</span>
+        <div><div class="label" style="color:var(--amber);">Etapa 2 · Conferência</div><h2 style="color:#6E4A16;">Resumo do pedido — lançar no SIGAF</h2>
+        <p class="desc">Confira as quantidades finais antes de lançar o pedido no SIGAF. Indicadores gerenciais completos (status por categoria, ranking de itens críticos, linha do tempo) estão na aba Painel.</p></div>
+      </div><span class="pill" id="resumoCount">0 itens</span></div>
+      <div class="card-body">
+        <div class="table-scroll" style="max-height:420px;">
+          <table>
+            <thead><tr><th>Status</th><th style="min-width:200px;">Item</th><th>Código</th><th>Consumo máximo</th><th>Quantidade a pedir</th></tr></thead>
+            <tbody id="resumoBody"><tr class="empty-row"><td colspan="5">Nenhum item no pedido ainda.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="autosave-row">
+        <label class="autosave-toggle"><input type="checkbox" id="autosaveTogglePedido" checked>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+        <span id="autosaveTextPedido">Salvamento automático ativado</span>
+      </div>
+      <div class="actions-buttons">
+        <button class="ghost" onclick="exportPedidoCSV()">Exportar CSV</button>
+        <button class="ghost" onclick="exportBackup()">Exportar backup</button>
+        <button class="primary" onclick="window.print()">Imprimir / Exportar PDF</button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================ EXPORTAÇÕES ============================================================ -->
+  <section id="tab-export" class="tab-content hidden">
+    <div class="migration-note">
+      <b>Um lugar só para tirar dados do sistema.</b> Cada card abaixo gera um arquivo pronto pra baixar — CSV para
+      planilhas simples, .xlsx quando o formato precisa reproduzir um modelo específico, e .json para o backup
+      completo. Nenhum desses exports altera o que está salvo no sistema.
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">1</span>
+        <div><div class="label">Catálogo</div><h2>Itens cadastrados</h2>
+        <p class="desc">Todos os 315 itens do catálogo com seus dados de programação atuais (consumo, estoque, margem, seleção para o pedido). Útil para conferência ou para levar os dados para outra planilha.</p></div>
+      </div></div>
+      <div class="card-body"><button class="primary" onclick="exportItemsCSV()">Exportar CSV</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">2</span>
+        <div><div class="label">Pedido atual</div><h2>Revisão completa do pedido</h2>
+        <p class="desc">Os itens marcados "No pedido", com todas as colunas do cálculo CEAF/SIGAF (CMM, a consumir, estoque futuro, necessária, sugerida, status). O mesmo conteúdo que aparece na Etapa 1 de Pedido &amp; Programação.</p></div>
+      </div></div>
+      <div class="card-body"><button class="primary" onclick="exportPedidoCSV()">Exportar CSV</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">3</span>
+        <div><div class="label">Painel</div><h2>Detalhamento por item</h2>
+        <p class="desc">A tabela "Detalhamento completo" do Painel, respeitando os filtros de status/categoria/busca que estiverem ativos lá no momento.</p></div>
+      </div></div>
+      <div class="card-body"><button class="primary" onclick="exportPainelDetailCSV()">Exportar CSV</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">4</span>
+        <div><div class="label">Painel</div><h2>Fornecimento por medicamento e município</h2>
+        <p class="desc">A tabela de fornecimento por município do Painel (mês mais recente importado da planilha de Atendimento), respeitando os filtros ativos lá.</p></div>
+      </div></div>
+      <div class="card-body"><button class="primary" onclick="exportFornecimentoMunicipioCSV()">Exportar CSV</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge amber">5</span>
+        <div><div class="label">Modelo externo</div><h2>Medicamentos em falta — modelo "Consolidado"</h2>
+        <p class="desc">Reproduz o formato de planilha de acompanhamento de desabastecimento (aba "Consolidado": medicamento nas linhas, um mês por coluna, de Jan a Dez, mais o total do ano) — o mesmo modelo usado para consolidar os meses de indisponibilidade de cada item ao longo do ano.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div class="alert-box warn" style="margin-bottom:14px;"><span class="icon">!</span>
+          <div>O sistema só guarda o status atual de ruptura (sim/não em cada item), não um histórico dia a dia. Este arquivo marca com <b>1</b> o mês da data de análise vigente para cada item hoje em ruptura, e deixa os demais meses em <b>0</b> — use-o como ponto de partida e vá completando os meses seguintes por fora, ou reexporte a cada nova consulta para atualizar o mês corrente.</div>
+        </div>
+        <button class="primary" onclick="exportMedEmFaltaXLSX()">Exportar .xlsx</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge amber">6</span>
+        <div><div class="label">Modelo externo</div><h2>Medicamentos em falta — relatório em PDF</h2>
+        <p class="desc">Reproduz o layout de um boletim de desabastecimento usado como referência: título "Atualização", tabela com medicamento, dia de entrada em falta, dias em falta e previsão de chegada, seguida de uma seção para itens suspensos temporariamente, e um rodapé com a data/hora de emissão.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div class="alert-box warn" style="margin-bottom:14px;"><span class="icon">!</span>
+          <div>"Dia entrada em falta" agora é um campo editável em Parametrização (ao lado da marcação de ruptura) — o sistema sugere a data de hoje automaticamente, mas edite se souber a data real. Sem essa data, "Dias em falta" sai como "—". A seção "Suspenso temporário" sempre vem vazia: este sistema não distingue essa categoria de ruptura.</div>
+        </div>
+        <button class="primary" onclick="exportMedEmFaltaPDF()">Exportar .pdf</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">7</span>
+        <div><div class="label">Tudo</div><h2>Backup completo do sistema</h2>
+        <p class="desc">Todos os itens, período, estabelecimento e histórico de importações, em um único .json — o mesmo arquivo usado para restaurar o sistema em "Importar backup" (Parametrização).</p></div>
+      </div></div>
+      <div class="card-body"><button class="primary" onclick="exportBackup()">Exportar .json</button></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ CONFIGURAÇÕES ============================================================ -->
+  <section id="tab-settings" class="tab-content hidden">
+    <div class="card">
+      <div class="card-head"><div class="card-head-main"><span class="step-badge">⚙️</span>
+        <div><div class="label">Sistema</div><h2>Configurações e dados</h2>
+        <p class="desc">Backup completo (itens + período + estabelecimento), restauração do catálogo padrão e salvamento automático — únicos para todo o sistema, já que agora só existe uma base de dados.</p></div>
+      </div></div>
+      <div class="card-body">
+        <div class="subsection">
+          <div class="subsection-head"><span class="dash"></span><h3>Identificação</h3></div>
+          <div class="field" style="max-width:340px;">
+            <label>Seu nome<span class="hint" data-tip="Usado para registrar quem fez cada ajuste manual de programação (o selo ✎ nas tabelas mostra esse nome e a data). Fica salvo neste navegador, não é apagado ao restaurar o catálogo.">i</span></label>
+            <input type="text" id="usuarioAtualNome" placeholder="Nome de quem está usando o sistema agora">
+          </div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-head"><span class="dash"></span><h3>Salvamento automático</h3></div>
+          <div class="autosave-row">
+            <label class="autosave-toggle"><input type="checkbox" id="autosaveToggle" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            <span id="autosaveText">Salvamento automático ativado</span>
+          </div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-head"><span class="dash"></span><h3>Backup</h3></div>
+          <div class="actions-buttons" style="margin-left:0;">
+            <button class="ghost" onclick="exportBackup()">Exportar backup (.json)</button>
+            <button class="ghost" onclick="document.getElementById('inputImportBackup').click()">Importar backup</button>
+            <input type="file" id="inputImportBackup" accept="application/json,.json" class="hidden">
+          </div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-head"><span class="dash"></span><h3>Dados</h3></div>
+          <div class="actions-buttons" style="margin-left:0;">
+            <button class="danger" onclick="restaurarCatalogoPadrao()">Restaurar catálogo padrão (315 itens)</button>
+            <button class="danger" onclick="limparProgramacao()">Limpar dados de programação de todos os itens</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+<footer class="page">Sistema Único de Saúde (SUS) — Componente Especializado da Assistência Farmacêutica (CEAF)</footer>
+<div class="js-tooltip" id="jsTooltip"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+const RAW_CATALOG = [
+{code:'6833',name:'ABATACEPTE 125 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'3004',name:'ABATACEPTE 250 MG PÓ LIOFÍLICO PARA INJETÁVEL',category:'termolabil',fe:1},
+{code:'1213',name:'ACIDO URSODESOXICOLICO 150 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'1214',name:'ACIDO URSODESOXICOLICO 300 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'5988',name:'ACIDO ZOLEDRONICO 0,05 MG/ML (POR FRASCO/BOLSA DE 100 ML) SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:1},
+{code:'914',name:'ACITRETINA 10 MG CAPSULA',category:'termoestavel',fe:100},
+{code:'915',name:'ACITRETINA 25 MG CAPSULA',category:'termoestavel',fe:100},
+{code:'9966',name:'ADALIMUMABE 40 MG (BIOSSIMILAR B) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)',category:'termolabil',fe:2},
+{code:'753',name:'ADALIMUMABE 40 MG (ORIGINADOR) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)',category:'termolabil',fe:2},
+{code:'SC9',name:'ÁGUA DESTILADA, BIDESTILADA, ESTÉRIL, APIROGÊNICA BOLSA OU FRASCO 100 ML',category:'termoestavel',fe:1},
+{code:'9596',name:'AGULHA PARA CANETA APLICADORA DE INSULINA NPH/REGULAR/AÇÃO RÁPIDA/AÇÃO PROLONGADA',category:'termoestavel',fe:100},
+{code:'7664',name:'ALENTUZUMABE 10 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'7653',name:'ALFA-ALGLICOSIDASE 50 MG PÓ LIOFÍLICO PARA INJETÁVEL',category:'termolabil',fe:1},
+{code:'1034',name:'ALFADORNASE 2,5 MG SOLUCAO PARA INALACAO',category:'termoestavel',fe:6},
+{code:'9718',name:'ALFAELOSULFASE 1 MG/ML SOLUÇÃO PARA DILUIÇÃO PARA INFUSÃO',category:'termolabil',fe:1},
+{code:'571',name:'ALFAEPOETINA (ERITROPOETINA) 1.000 UI SOLUÇÃO INJETÁVEL',category:'termolabil',fe:12},
+{code:'1340',name:'ALFAEPOETINA (ERITROPOETINA) 10.000 UI SOLUÇÃO INJETÁVEL',category:'termolabil',fe:12},
+{code:'574',name:'ALFAEPOETINA (ERITROPOETINA) 2.000 UI SOLUÇÃO INJETÁVEL',category:'termolabil',fe:12},
+{code:'575',name:'ALFAEPOETINA (ERITROPOETINA) 3.000 UI SOLUÇÃO INJETÁVEL',category:'termolabil',fe:12},
+{code:'576',name:'ALFAEPOETINA (ERITROPOETINA) 4.000 UI SOLUÇÃO INJETÁVEL',category:'termolabil',fe:12},
+{code:'9594',name:'ALFAGALSIDASE 1 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'81',name:'ALFAINTERFERONA 2B 3.000.000 UI SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:1},
+{code:'767',name:'ALFAINTERFERONA 2B 5.000.000 UI SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:1},
+{code:'6126',name:'ALFATALIGLICERASE 200 UI PÓ LIOFÍLICO PARA INJETÁVEL',category:'termolabil',fe:1},
+{code:'6128',name:'ALFAVELAGLICERASE 400 UI PÓ LIOFÍLICO PARA INJETÁVEL',category:'termolabil',fe:1},
+{code:'SC25',name:'ALFAVESTRONIDASE 10 MG SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'844',name:'AMANTADINA 100 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'4214',name:'AMBRISENTANA 10 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'4213',name:'AMBRISENTANA 5 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'339',name:'ATORVASTATINA CALCICA 10 MG COMPRIMIDO',category:'termoestavel',fe:90},
+{code:'340',name:'ATORVASTATINA CALCICA 20 MG COMPRIMIDO',category:'termoestavel',fe:90},
+{code:'342',name:'ATORVASTATINA CALCICA 80 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'1019',name:'AZATIOPRINA 50 MG COMPRIMIDO',category:'termoestavel',fe:100},
+{code:'9814',name:'BARICITINIBE 2 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'9815',name:'BARICITINIBE 4 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'1043',name:'BETAINTERFERONA 1A 12.000.000 UI (44 MCG) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)',category:'termolabil',fe:12},
+{code:'1044',name:'BETAINTERFERONA 1A 6.000.000 UI (22 MCG) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)',category:'termolabil',fe:12},
+{code:'2283',name:'BETAINTERFERONA 1A 6.000.000 UI (30 MCG/0,5 ML) PÓ LIOFÍLICO PARA INJETÁVEL',category:'termolabil',fe:4},
+{code:'2282',name:'BETAINTERFERONA 1B 9.600.000 UI (300 MCG) PÓ LIOFÍLICO PARA INJETÁVEL (FRASCO-AMPOLA)',category:'termoestavel',fe:1},
+{code:'297',name:'BEZAFIBRATO 200 MG COMPRIMIDO',category:'termoestavel',fe:20},
+{code:'SC40',name:'BIOTINA 2,5 MG CÁPSULA',category:'termoestavel',fe:1},
+{code:'1183',name:'BOSENTANA 125 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'1182',name:'BOSENTANA 62,5 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'8083',name:'BROMETO DE GLICOPIRRÔNIO 50 MCG CAPSULA INALANTE',category:'termoestavel',fe:30},
+{code:'8816',name:'BROMETO DE UMECLIDÍNIO + TRIFENATATO DE VILANTEROL 62,5+25 MCG PO PARA INALAÇÃO',category:'termoestavel',fe:1},
+{code:'979',name:'BROMOCRIPTINA MESILATO 2,5 MG COMPRIMIDO',category:'termoestavel',fe:28},
+{code:'1426',name:'BUDESONIDA 200 MCG CAPSULA INALANTE',category:'termoestavel',fe:60},
+{code:'2284',name:'BUDESONIDA 400 MCG CAPSULA INALANTE',category:'termoestavel',fe:60},
+{code:'68',name:'BUDESONIDA + FORMOTEROL 200+6 MCG CAPSULA INALANTE',category:'termoestavel',fe:60},
+{code:'5025',name:'BUDESONIDA + FORMOTEROL 200+6 MCG PO PARA INALAÇÃO',category:'termoestavel',fe:1},
+{code:'66',name:'BUDESONIDA + FORMOTEROL 400+12 MCG CAPSULA INALANTE',category:'termoestavel',fe:60},
+{code:'2954',name:'BUDESONIDA + FORMOTEROL 400+12 MCG PO PARA INALAÇÃO',category:'termoestavel',fe:1},
+{code:'9968',name:'BUROSUMABE 10 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'9969',name:'BUROSUMABE 20 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'9970',name:'BUROSUMABE 30 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'535',name:'CABERGOLINA 0,5 MG COMPRIMIDO',category:'termoestavel',fe:8},
+{code:'4383',name:'CALCIPOTRIOL 50 MCG/G POMADA',category:'termoestavel',fe:1},
+{code:'862',name:'CALCITONINA 200 UI/DOSE SOLUCAO NASAL',category:'termolabil',fe:1},
+{code:'957',name:'CALCITRIOL 0,25 MCG CAPSULA',category:'termoestavel',fe:30},
+{code:'265',name:'CALCITRIOL 1 MCG/ML INJETAVEL',category:'termoestavel',fe:3},
+{code:'10081',name:'CANETA PARA APLICAÇÃO DE INSULINA ANÁLOGA DE AÇÃO PROLONGADA',category:'termolabil',fe:1},
+{code:'8380',name:'CANETA PARA APLICAÇÃO DE INSULINA ANÁLOGA DE AÇÃO RÁPIDA',category:'termolabil',fe:1},
+{code:'3003',name:'CERTOLIZUMABE PEGOL 200 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:2},
+{code:'2273',name:'CICLOFOSFAMIDA 50 MG DRÁGEA',category:'termolabil',fe:50},
+{code:'325',name:'CICLOSPORINA 100 MG CAPSULA',category:'termoestavel',fe:50},
+{code:'696',name:'CICLOSPORINA 100 MG/ML SOLUCAO ORAL',category:'termoestavel',fe:1},
+{code:'323',name:'CICLOSPORINA 25 MG CAPSULA',category:'termoestavel',fe:50},
+{code:'324',name:'CICLOSPORINA 50 MG CAPSULA',category:'termoestavel',fe:50},
+{code:'5606',name:'CINACALCETE CLORIDRATO 30 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'7307',name:'CINACALCETE CLORIDRATO 60 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'337',name:'CIPROFIBRATO 100 MG COMPRIMIDO',category:'termoestavel',fe:20},
+{code:'141',name:'CIPROTERONA ACETATO 50 MG COMPRIMIDO',category:'termoestavel',fe:20},
+{code:'10207',name:'CLADRIBINA 10 MG COMPRIMIDO',category:'termoestavel',fe:1},
+{code:'670',name:'CLOBAZAM 10 MG COMPRIMIDO',category:'termoestavel',fe:20},
+{code:'671',name:'CLOBAZAM 20 MG COMPRIMIDO',category:'termoestavel',fe:20},
+{code:'4545',name:'CLOBETASOL PROPIONATO 0,5 MG/G CREME DERMATOLOGICO',category:'termoestavel',fe:1},
+{code:'4253',name:'CLOBETASOL PROPIONATO 0,5 MG/G SOLUCAO CAPILAR',category:'termoestavel',fe:1},
+{code:'4284',name:'CLOPIDOGREL BISSULFATO 75 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'9665',name:'CLORIDRATO DE OLODATEROL + BROMETO DE TIOTRÓPIO 2,5+2,5 MCG SOLUCAO PARA INALACAO',category:'termoestavel',fe:1},
+{code:'411',name:'CLOROQUINA DIFOSFATO 250 MG (150 MG CLOROQUINA BASE) COMPRIMIDO',category:'termoestavel',fe:10},
+{code:'801',name:'CLOZAPINA 100 MG COMPRIMIDO',category:'termoestavel',fe:450},
+{code:'802',name:'CLOZAPINA 25 MG COMPRIMIDO',category:'termoestavel',fe:200},
+{code:'428',name:'CODEINA FOSFATO 3 MG/ML SOLUCAO ORAL',category:'termoestavel',fe:1},
+{code:'427',name:'CODEINA FOSFATO 30 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'429',name:'CODEINA FOSFATO 60 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'SC85',name:'COLISTIMETATO SODICO 1.000.000 UI SOLUCAO PARA INALACAO',category:'termoestavel',fe:1},
+{code:'SC86',name:'COMPLEMENTO ALIMENTAR LÁCTEO ISENTO DE SACAROSE (ADOLESCENTE/ADULTO) PÓ',category:'termoestavel',fe:1},
+{code:'2272',name:'COMPLEMENTO ALIMENTAR P/ FENILCETONURICOS (FAIXA ETARIA A PARTIR DE 8 ANOS) PO/LATA',category:'termoestavel',fe:1},
+{code:'2271',name:'COMPLEMENTO ALIMENTAR P/ FENILCETONURICOS FORMULA DE AMINOACIDOS ISENTA DE FENILALANINA (FAIXA ETARIA 0 A 12 MESES) PO/LATA',category:'termoestavel',fe:1},
+{code:'2270',name:'COMPLEMENTO ALIMENTAR P/ FENILCETONURICOS FORMULA DE AMINOACIDOS ISENTA DE FENILALANINA (FAIXA ETARIA DE 1 A 8 ANOS) PO/LATA',category:'termoestavel',fe:1},
+{code:'791',name:'DANAZOL 100 MG CAPSULA',category:'termoestavel',fe:50},
+{code:'6370',name:'DAPAGLIFLOZINA 10 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'1437',name:'DEFERASIROX 125 MG COMPRIMIDO PARA SUSPENSÃO',category:'termoestavel',fe:28},
+{code:'1621',name:'DEFERASIROX 250 MG COMPRIMIDO PARA SUSPENSÃO',category:'termoestavel',fe:28},
+{code:'1438',name:'DEFERASIROX 500 MG COMPRIMIDO PARA SUSPENSÃO',category:'termoestavel',fe:28},
+{code:'SC95',name:'DEFERIPRONA 1000 MG COMPRIMIDO DE LIBERAÇÃO MODIFICADA',category:'termoestavel',fe:1},
+{code:'1619',name:'DEFERIPRONA 500 MG COMPRIMIDO',category:'termoestavel',fe:100},
+{code:'472',name:'DESFERROXAMINA MESILATO 500 MG INJETAVEL',category:'termoestavel',fe:5},
+{code:'1674',name:'DESMOPRESSINA ACETATO 0,1 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'460',name:'DESMOPRESSINA ACETATO 0,1 MG/ML SOLUCAO NASAL',category:'termoestavel',fe:1},
+{code:'SC100',name:'DESMOPRESSINA ACETATO 0,2 MG COMPRIMIDO',category:'termoestavel',fe:1},
+{code:'SC101',name:'DIETA ENTERAL LÍQUIDA (ADOLESCENTES/ADULTOS) 1,2 e 1,5kcal/ml (ATÉ 1,23 Kcal/ml)',category:'termoestavel',fe:1},
+{code:'SC102',name:'DIPROPIONATO DE BECLOMETASONA + BROMETO DE GLICOPIRRÔNIO + FUMARATO DE FORMOTEROL 100,0 + 6,0 +12,5 MCG SOLUCAO AEROSSOL',category:'termoestavel',fe:1},
+{code:'567',name:'DONEPEZILA CLORIDRATO 10 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:200},
+{code:'566',name:'DONEPEZILA CLORIDRATO 5 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:200},
+{code:'SC105',name:'ECULIZUMABE 10 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'SC106',name:'ELEXACAFTOR + TEZACAFTOR + IVACAFTOR + IVACAFTOR 100 + 50 + 75 + 150 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:1},
+{code:'SC107',name:'ELEXACAFTOR + TEZACAFTOR + IVACAFTOR + IVACAFTOR 50+25+37,5+75 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:1},
+{code:'7319',name:'ELTROMBOPAGUE OLAMINA 25 MG COMPRIMIDO',category:'termoestavel',fe:14},
+{code:'7316',name:'ELTROMBOPAGUE OLAMINA 50 MG COMPRIMIDO',category:'termoestavel',fe:14},
+{code:'1725',name:'ENOXAPARINA SODICA 40 MG/0,4 ML (100 MG/ML), SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:10},
+{code:'9735',name:'ENOXAPARINA SODICA 60 MG/0,6mL (100 MG/ML), SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:2},
+{code:'433',name:'ENTACAPONA 200 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'9686',name:'ETANERCEPTE (BIOSSIMILAR A) 50 MG PO PARA INJETAVEL',category:'termolabil',fe:4},
+{code:'556',name:'ETANERCEPTE (ORIGINADOR) 50 MG PO PARA INJETAVEL',category:'termolabil',fe:4},
+{code:'555',name:'ETANERCEPTE 25 MG PO PARA INJETAVEL',category:'termolabil',fe:4},
+{code:'2274',name:'ETOSSUXIMIDA 50 MG/ML FRASCO',category:'termoestavel',fe:1},
+{code:'1429',name:'EVEROLIMO 0,5 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'2304',name:'EVEROLIMO 0,75 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'1430',name:'EVEROLIMO 1 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'824',name:'FENOFIBRATO 200 MG CAPSULA',category:'termoestavel',fe:30},
+{code:'2286',name:'FENOTEROL BROMIDRATO 100 MCG AEROSSOL ORAL',category:'termoestavel',fe:1},
+{code:'806',name:'FILGRASTIM 300 MCG SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'6418',name:'FILTRO PARA SOLUCAO INTRAVENOSA 0',category:'termolabil',fe:1},
+{code:'4883',name:'FINGOLIMODE CLORIDRATO 0,5 MG CAPSULA',category:'termoestavel',fe:28},
+{code:'651',name:'FLUDROCORTISONA ACETATO 0,1 MG COMPRIMIDO',category:'termolabil',fe:100},
+{code:'2287',name:'FORMOTEROL FUMARATO 12 MCG CAPSULA INALANTE',category:'termoestavel',fe:60},
+{code:'SC127',name:'FÓRMULA INFANTIL (LACTENTES/CRIANÇAS) 1,0 Kcal/ml',category:'termoestavel',fe:1},
+{code:'SC128',name:'FÓRMULA INFANTIL EM PÓ PARA CRIANÇAS DE 6 MESES A 3 ANOS',category:'termoestavel',fe:1},
+{code:'SC129',name:'FÓRMULA INFANTIL EM PÓ PARA LACTENTES DE 0 a 6 MESES (1° SEMESTRE)',category:'termoestavel',fe:1},
+{code:'SC130',name:'FÓRMULA INFANTIL SEMI ELEMENTAR ISENTA DE LACTOSE E SACAROSE (DE 0 A 36 MESES)',category:'termoestavel',fe:1},
+{code:'9495',name:'FUMARATO DE DIMETILA 120 MG COMPRIMIDO',category:'termoestavel',fe:14},
+{code:'9496',name:'FUMARATO DE DIMETILA 240 MG CÁPSULA DURA DE LIBERAÇÃO RETARDADA',category:'termoestavel',fe:56},
+{code:'9839',name:'FUROATO DE FLUTICASONA + BROMETO DE UMECLIDÍNIO + TRIFENATATO DE VILANTEROL 100 + 62,5 + 25 MCG PO PARA INALAÇÃO',category:'termoestavel',fe:1},
+{code:'682',name:'GABAPENTINA 300 MG CÁPSULA DURA',category:'termoestavel',fe:60},
+{code:'681',name:'GABAPENTINA 400 MG CÁPSULA DURA',category:'termoestavel',fe:300},
+{code:'1046',name:'GALANTAMINA HIDROBROMETO 16 MG CAPSULA DE LIBERACAO CONTROLADA',category:'termoestavel',fe:30},
+{code:'1047',name:'GALANTAMINA HIDROBROMETO 24 MG CAPSULA DE LIBERACAO CONTROLADA',category:'termoestavel',fe:30},
+{code:'1048',name:'GALANTAMINA HIDROBROMETO 8 MG CAPSULA DE LIBERACAO CONTROLADA',category:'termoestavel',fe:30},
+{code:'897',name:'GALSULFASE 1 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'2232',name:'GANCICLOVIR SODICO 1 MG/ML (250 MG BOLSA FECHADA) SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:1},
+{code:'688',name:'GANCICLOVIR SODICO 500 MG PÓ LIOFÍLICO PARA INJETÁVEL',category:'termoestavel',fe:1},
+{code:'695',name:'GENFIBROZILA 900 MG COMPRIMIDO',category:'termoestavel',fe:12},
+{code:'436',name:'GLATIRAMER ACETATO 20 MG/ML SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:28},
+{code:'9609',name:'GLATIRAMER ACETATO 40 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:12},
+{code:'3001',name:'GOLIMUMABE 50 MG SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'1664',name:'GOSSERRELINA ACETATO 10,8 MG SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'1665',name:'GOSSERRELINA ACETATO 3,6 MG SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'998',name:'HIDROXICLOROQUINA SULFATO 400 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'10272',name:'HIDROXIUREIA 100 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:60},
+{code:'758',name:'HIDROXIUREIA 500 MG CAPSULA',category:'termoestavel',fe:100},
+{code:'8696',name:'IDURSULFASE 2 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'2289',name:'ILOPROSTA 10 MCG/ML SOLUCAO PARA NEBULIZACAO',category:'termoestavel',fe:30},
+{code:'2340',name:'IMIGLUCERASE 400 UI PO PARA INJETAVEL',category:'termolabil',fe:1},
+{code:'1236',name:'IMUNOGLOBULINA HUMANA 1 G SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:1},
+{code:'1439',name:'IMUNOGLOBULINA HUMANA 2,5 G SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:1},
+{code:'648',name:'IMUNOGLOBULINA HUMANA 5 G SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'9930',name:'INFLIXIMABE (BIOSSIMILAR) 10 MG/ML PO PARA INJETAVEL',category:'termolabil',fe:1},
+{code:'1045',name:'INFLIXIMABE (ORIGINADOR) 10 MG/ML PO PARA INJETAVEL',category:'termolabil',fe:1},
+{code:'2277',name:'INSULINA ANÁLOGA DE AÇÃO PROLONGADA 100 UI/ML (FR) SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'797',name:'INSULINA ANÁLOGA DE AÇÃO PROLONGADA 100 UI/ML (RF/CANETA) SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'10025',name:'INSULINA ANÁLOGA DE AÇÃO RÁPIDA (SISTEMA DE APLICAÇÃO DESCARTÁVEL) 100 UI/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:5},
+{code:'948',name:'INSULINA ANÁLOGA DE AÇÃO RÁPIDA (TUBETES COM SISTEMA DE APLICAÇÃO REUTILIZÁVEL) 100 UI/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:5},
+{code:'9822',name:'INSULINA ANÁLOGA DE AÇÃO RÁPIDA ASPARTE (CRIANÇAS MENORES DE 4 ANOS E GRÁVIDAS) 100 UI/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:5},
+{code:'2334',name:'IPRATROPIO BROMETO 20 MCG AEROSSOL ORAL',category:'termoestavel',fe:1},
+{code:'294',name:'ISOTRETINOINA 10 MG CAPSULA',category:'termoestavel',fe:30},
+{code:'779',name:'ISOTRETINOINA 20 MG CAPSULA',category:'termoestavel',fe:10},
+{code:'SC167',name:'IVACAFTOR 150 MG COMPRIMIDO REVESTIDO',category:'termolabil',fe:1},
+{code:'3007',name:'KIT INFUSAO ABATACEPTE',category:'termoestavel',fe:1},
+{code:'3006',name:'KIT PARA INFUSÁO INFLIXIMABE',category:'termoestavel',fe:1},
+{code:'564',name:'LAMIVUDINA 10 MG/ML SOLUCAO ORAL',category:'termoestavel',fe:1},
+{code:'563',name:'LAMIVUDINA 150 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'793',name:'LAMOTRIGINA 100 MG COMPRIMIDO',category:'termoestavel',fe:200},
+{code:'794',name:'LAMOTRIGINA 25 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'795',name:'LAMOTRIGINA 50 MG COMPRIMIDO',category:'termoestavel',fe:20},
+{code:'4950',name:'LANREOTIDA 120 MG SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'4947',name:'LANREOTIDA 60 MG SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'4948',name:'LANREOTIDA 90 MG SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'63',name:'LARONIDASE 0,58 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'158',name:'LEFLUNOMIDA 20 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'1623',name:'LEUPRORRELINA ACETATO 11,25 MG PÓ LIOFÍLICO PARA INJETÁVEL',category:'termolabil',fe:1},
+{code:'799',name:'LEUPRORRELINA ACETATO 3,75 MG PÓ LIOFÍLICO PARA INJETÁVEL',category:'termolabil',fe:1},
+{code:'10044',name:'LEUPRORRELINA ACETATO 45 MG PÓ LIOFÍLICO PARA INJETÁVEL',category:'termolabil',fe:1},
+{code:'8815',name:'LEVETIRACETAM 100 MG/ML (FR 100 ML) SOLUCAO ORAL',category:'termoestavel',fe:1},
+{code:'9676',name:'LEVETIRACETAM 100 MG/ML (FR 150 ML) SOLUCAO ORAL',category:'termoestavel',fe:1},
+{code:'9649',name:'LEVETIRACETAM 1000 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'6663',name:'LEVETIRACETAM 250 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'6314',name:'LEVETIRACETAM 500 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'8027',name:'LEVETIRACETAM 750 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'SC189',name:'LINEZOLIDA 600 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:1},
+{code:'1626',name:'MEMANTINA CLORIDRATO 10 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:200},
+{code:'9664',name:'MEPOLIZUMABE 100 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'985',name:'MESALAZINA 1000 MG SUPOSITORIO',category:'termoestavel',fe:28},
+{code:'9997',name:'MESALAZINA 2000 MG (2G) GRANULADO REVESTIDO DE LIBERAÇÃO PROLONGADA',category:'termoestavel',fe:30},
+{code:'167',name:'MESALAZINA 250 MG SUPOSITORIO',category:'termoestavel',fe:15},
+{code:'318',name:'MESALAZINA 400 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'319',name:'MESALAZINA 500 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:50},
+{code:'320',name:'MESALAZINA 800 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'1452',name:'METADONA 10 MG COMPRIMIDO',category:'termoestavel',fe:20},
+{code:'SC199',name:'METADONA CLORIDRATO 10 MG/ML SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:1},
+{code:'895',name:'METADONA CLORIDRATO 5 MG COMPRIMIDO',category:'termoestavel',fe:20},
+{code:'2293',name:'METOTREXATO 2,5 MG COMPRIMIDO',category:'termoestavel',fe:20},
+{code:'240',name:'METOTREXATO 25 MG/ML SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:5},
+{code:'888',name:'MICOFENOLATO DE SODIO 180 MG COMPRIMIDO',category:'termoestavel',fe:120},
+{code:'887',name:'MICOFENOLATO DE SODIO 360 MG COMPRIMIDO',category:'termoestavel',fe:100},
+{code:'307',name:'MICOFENOLATO MOFETILA 500 MG COMPRIMIDO',category:'termoestavel',fe:500},
+{code:'2639',name:'MIGLUSTATE 100 MG CAPSULA',category:'termoestavel',fe:90},
+{code:'398',name:'MINOCICLINA CLORIDRATO 100 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:10},
+{code:'885',name:'MORFINA LC SULFATO PENTAIDRATADO 100 MG CAPSULA DE LIBERACAO CONTROLADA',category:'termoestavel',fe:60},
+{code:'883',name:'MORFINA LC SULFATO PENTAIDRATADO 30 MG CAPSULA DE LIBERACAO CONTROLADA',category:'termoestavel',fe:100},
+{code:'884',name:'MORFINA LC SULFATO PENTAIDRATADO 60 MG CAPSULA DE LIBERACAO CONTROLADA',category:'termoestavel',fe:60},
+{code:'502',name:'MORFINA SULFATO 10 MG COMPRIMIDO',category:'termoestavel',fe:50},
+{code:'504',name:'MORFINA SULFATO 10 MG/ML SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:100},
+{code:'507',name:'MORFINA SULFATO 10 MG/ML SOLUCAO ORAL',category:'termoestavel',fe:1},
+{code:'SC214',name:'MORFINA SULFATO 100 MG CAPSULA',category:'termoestavel',fe:1},
+{code:'503',name:'MORFINA SULFATO 30 MG COMPRIMIDO',category:'termoestavel',fe:50},
+{code:'2564',name:'NAPROXENO 250 MG COMPRIMIDO',category:'termoestavel',fe:24},
+{code:'1860',name:'NAPROXENO 500 MG COMPRIMIDO',category:'termoestavel',fe:24},
+{code:'2493',name:'NATALIZUMABE 300 MG SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'7331',name:'NINTEDANIBE 150 MG CÁPSULA MOLE',category:'termolabil',fe:60},
+{code:'SC220',name:'NUSINERSENA 2,4 MG/ML (12MG/5ML) SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'1454',name:'OCTREOTIDA ACETATO 0,1 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:5},
+{code:'1078',name:'OCTREOTIDA LAR 10 MG PÓ PARA SUSPENSÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'1079',name:'OCTREOTIDA LAR 20 MG PÓ PARA SUSPENSÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'1080',name:'OCTREOTIDA LAR 30 MG PÓ PARA SUSPENSÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'951',name:'OLANZAPINA 10 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'950',name:'OLANZAPINA 5 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'1250',name:'OMALIZUMABE 150 MG SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'2294',name:'PANCREATINA 10.000 UI (150 MG) CÁPSULA DURA',category:'termoestavel',fe:30},
+{code:'2295',name:'PANCREATINA 25.000 UI (300 MG) CÁPSULA DURA',category:'termoestavel',fe:30},
+{code:'7443',name:'PARICALCITOL 5 MCG/ML SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:5},
+{code:'453',name:'PENICILAMINA 250 MG CAPSULA',category:'termoestavel',fe:100},
+{code:'8549',name:'PIRFENIDONA 267 MG CAPSULA',category:'termoestavel',fe:270},
+{code:'855',name:'PIRIDOSTIGMINA BROMETO 60 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'1106',name:'PRAMIPEXOL DICLORIDRATO 0,125 MG (0,088 MG DE PRAMIPEXOL) COMPRIMIDO',category:'termoestavel',fe:10},
+{code:'1107',name:'PRAMIPEXOL DICLORIDRATO 0,25 MG (0,18 MG DE PRAMIPEXOL) COMPRIMIDO',category:'termoestavel',fe:10},
+{code:'1108',name:'PRAMIPEXOL DICLORIDRATO 1,0 MG (0,7 MG DE PRAMIPEXOL) COMPRIMIDO',category:'termoestavel',fe:300},
+{code:'1017',name:'PRIMIDONA 100 MG COMPRIMIDO',category:'termoestavel',fe:100},
+{code:'1101',name:'QUETIAPINA HEMIFUMARATO 100 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'1102',name:'QUETIAPINA HEMIFUMARATO 200 MG COMPRIMIDO',category:'termoestavel',fe:28},
+{code:'1103',name:'QUETIAPINA HEMIFUMARATO 25 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'2296',name:'QUETIAPINA HEMIFUMARATO 300 MG COMPRIMIDO',category:'termoestavel',fe:200},
+{code:'612',name:'RALOXIFENO CLORIDRATO 60 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:30},
+{code:'194',name:'RASAGILINA 1 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'880',name:'RIFAMPICINA 20 MG/ML SUSPENSAO ORAL',category:'termoestavel',fe:50},
+{code:'879',name:'RIFAMPICINA 300 MG CÁPSULA DURA',category:'termoestavel',fe:10},
+{code:'1058',name:'RILUZOL 50 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:28},
+{code:'10253',name:'RISANQUIZUMABE 150 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'9896',name:'RISANQUIZUMABE 75 MG/ 0,83 ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:2},
+{code:'SC249',name:'RISDIPLAM 0,75 MG/ML PÓ PARA SOLUÇÃO ORAL',category:'termolabil',fe:1},
+{code:'1266',name:'RISEDRONATO SODICO 35 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:12},
+{code:'1059',name:'RISPERIDONA 1 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:300},
+{code:'2558',name:'RISPERIDONA 1 MG/ML SOLUCAO ORAL',category:'termoestavel',fe:1},
+{code:'1060',name:'RISPERIDONA 2 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:300},
+{code:'9695',name:'RITUXIMABE (BIOSSIMILAR A) 500 MG INJETÁVEL (POR FRASCO-AMPOLA DE 50 ML)',category:'termolabil',fe:1},
+{code:'SC255',name:'RITUXIMABE (BIOSSIMILAR B) 100 MG INJETÁVEL (POR FRASCO-AMPOLA DE 10 ML)',category:'termolabil',fe:1},
+{code:'10292',name:'RITUXIMABE (BIOSSIMILAR B) 500 MG INJETÁVEL (POR FRASCO-AMPOLA DE 50 ML)',category:'termolabil',fe:1},
+{code:'839',name:'RITUXIMABE (ORIGINADOR) 500 MG INJETÁVEL (POR FRASCO-AMPOLA DE 50 ML)',category:'termolabil',fe:1},
+{code:'2943',name:'RIVASTIGMINA 18 MG MG ADESIVO TRANSDERMICO',category:'termoestavel',fe:30},
+{code:'1030',name:'RIVASTIGMINA 2 MG/ML SOLUCAO ORAL',category:'termoestavel',fe:1},
+{code:'5027',name:'RIVASTIGMINA 9 MG ADESIVO TRANSDERMICO',category:'termoestavel',fe:30},
+{code:'1436',name:'RIVASTIGMINA HEMITARTARATO 4,5 MG CÁPSULA DURA',category:'termoestavel',fe:30},
+{code:'1029',name:'RIVASTIGMINA HEMITARTARATO 6,0 MG CÁPSULA DURA',category:'termoestavel',fe:30},
+{code:'9852',name:'ROMOSOZUMABE 90 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:2},
+{code:'2297',name:'SACARATO DE HIDROXIDO FERRICO 20 MG/ML SOLUÇÃO INJETÁVEL',category:'termoestavel',fe:50},
+{code:'8902',name:'SACUBITRIL VALSARTANA SÓDICA HIDRATADA 100 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'8903',name:'SACUBITRIL VALSARTANA SÓDICA HIDRATADA 200 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'8901',name:'SACUBITRIL VALSARTANA SÓDICA HIDRATADA 50 MG COMPRIMIDO',category:'termoestavel',fe:28},
+{code:'1098',name:'SALMETEROL + FLUTICASONA 25+125 MCG SUSPENSAO COM PROPELENTE',category:'termoestavel',fe:1},
+{code:'1099',name:'SALMETEROL + FLUTICASONA 25+250 MCG SUSPENSAO COM PROPELENTE',category:'termoestavel',fe:1},
+{code:'1097',name:'SALMETEROL + FLUTICASONA 50+250 MCG PO PARA INALAÇÃO',category:'termoestavel',fe:1},
+{code:'1100',name:'SALMETEROL XINAFOATO 50 MCG PO PARA INALAÇÃO',category:'termoestavel',fe:1},
+{code:'9557',name:'SAPROPTERINA DICLORIDRATO 100 MG COMPRIMIDO',category:'termolabil',fe:30},
+{code:'8558',name:'SECUQUINUMABE 150 MG/ML PÓ PARA SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'402',name:'SELEGILINA CLORIDRATO 5 MG COMPRIMIDO',category:'termoestavel',fe:50},
+{code:'1050',name:'SEVELAMER CLORIDRATO 800 MG COMPRIMIDO',category:'termoestavel',fe:180},
+{code:'1053',name:'SILDENAFILA CITRATO 20 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:60},
+{code:'1229',name:'SILDENAFILA CITRATO 25 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:8},
+{code:'1226',name:'SILDENAFILA CITRATO 50 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:10},
+{code:'1041',name:'SIROLIMO 1 MG DRÁGEA',category:'termoestavel',fe:60},
+{code:'1042',name:'SIROLIMO 2 MG DRÁGEA',category:'termoestavel',fe:30},
+{code:'751',name:'SOMATROPINA 12 UI PÓ LIOFÍLICO PARA INJETÁVEL',category:'termolabil',fe:1},
+{code:'239',name:'SOMATROPINA 4 UI PÓ LIOFÍLICO PARA INJETÁVEL',category:'termolabil',fe:1},
+{code:'200',name:'SULFASSALAZINA 500 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:60},
+{code:'SC284',name:'SUPLEMENTO DE CARBOIDRATO À BASE DE MALTODEXTRINA (100% MALTODEXTRINA PURA) PÓ SOLUVEL',category:'termoestavel',fe:1},
+{code:'SC285',name:'SUPLEMENTO DE EMULSÃO LIPÍDICA',category:'termoestavel',fe:1},
+{code:'SC286',name:'SUPLEMENTO HIPERCALÓRICO LÍQUIDO ATÉ 2 KCal/ml (embalagem ≤',category:'termoestavel',fe:1},
+{code:'9916',name:'SUPLEMENTO PEDIÁTRICO (A PARTIR 12 MESES) NORMOCALÓRICA,NORMOPROTÉICA OU HIPERPROTEICA PÓ SOLUVEL',category:'termoestavel',fe:1},
+{code:'638',name:'TACROLIMO 1 MG CÁPSULA DURA',category:'termoestavel',fe:250},
+{code:'639',name:'TACROLIMO 5 MG CÁPSULA DURA',category:'termoestavel',fe:10},
+{code:'9497',name:'TAFAMIDIS 20 MG CAPSULA',category:'termolabil',fe:30},
+{code:'10293',name:'TAFAMIDIS 61 MG CÁPSULA MOLE',category:'termoestavel',fe:30},
+{code:'7343',name:'TERIFLUNOMIDA 14 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'2784',name:'TIOTROPIO BROMETO 2,5 MCG SOLUCAO PARA INALACAO',category:'termoestavel',fe:1},
+{code:'SC294',name:'TOBRAMICINA 60 MG/ML (300MG/5ML) SOLUCAO PARA INALACAO',category:'termoestavel',fe:1},
+{code:'3002',name:'TOCILIZUMABE 20 MG/ML SOLUÇÃO INJETÁVEL',category:'termolabil',fe:1},
+{code:'7037',name:'TOFACITINIBE 5 MG COMPRIMIDO REVESTIDO',category:'termoestavel',fe:60},
+{code:'96',name:'TOPIRAMATO 100 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'1177',name:'TOPIRAMATO 25 MG COMPRIMIDO',category:'termoestavel',fe:12},
+{code:'1178',name:'TOPIRAMATO 50 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'245',name:'TOXINA BOTULINICA TIPO A 100 UI FRASCO-AMPOLA',category:'termolabil',fe:1},
+{code:'543',name:'TOXINA BOTULINICA TIPO A 500 UI FRASCO-AMPOLA',category:'termolabil',fe:1},
+{code:'2312',name:'TRIENTINA 250 MG CAPSULA',category:'termolabil',fe:100},
+{code:'166',name:'TRIEXIFENIDILA CLORIDRATO 5 MG COMPRIMIDO',category:'termoestavel',fe:30},
+{code:'9687',name:'TRIPTORRELINA 11,25 MG SUSPENSAO INJETAVEL',category:'termoestavel',fe:1},
+{code:'10003',name:'TRIPTORRELINA 22,5 MG PÓ LIOFILIZADO PARA INJETÁVEL',category:'termoestavel',fe:1},
+{code:'9688',name:'TRIPTORRELINA 3,75 MG SUSPENSAO INJETAVEL',category:'termoestavel',fe:1},
+{code:'9980',name:'UMECLIDÍNIO BROMETO 62,5 MCG PO PARA INALAÇÃO',category:'termoestavel',fe:1},
+{code:'9895',name:'UPADACITINIBE 15 MG COMPRIMIDO REVESTIDO DE LIBERAÇÃO PROLONGADA',category:'termoestavel',fe:30},
+{code:'7633',name:'USTEQUINUMABE 45 MG (0,5 ML) SOLUÇÃO INJETÁVEL(BIOSSIMILAR)',category:'termolabil',fe:1},
+{code:'7633-B',name:'USTEQUINUMABE 45 MG (0,5 ML) SOLUÇÃO INJETÁVEL(ORIGINADOR)',category:'termolabil',fe:1},
+{code:'9456',name:'VEDOLIZUMABE 300 MG PÓ LIOFILIZADO PARA INJETÁVEL',category:'termolabil',fe:1},
+{code:'1073',name:'VIGABATRINA 500 MG COMPRIMIDO',category:'termoestavel',fe:60},
+{code:'708',name:'ZIPRASIDONA CLORIDRATO MONOIDRATADO 40 MG CAPSULA',category:'termoestavel',fe:28},
+{code:'710',name:'ZIPRASIDONA CLORIDRATO MONOIDRATADO 80 MG CAPSULA',category:'termoestavel',fe:28},
+];
+</script>
+<script>
+(function(){
+'use strict';
+
+/* ======================================================================
+   FASE 1 — SCHEMA ÚNICO DE ITEM
+   Uma só estrutura reúne os campos que antes viviam em dois lugares:
+   - do catálogo/"Itens Cadastrados" do Sistemão: code, name, category, fe
+   - da "Calculadora de Programação": consumoM1-M3, estoque, reservado,
+     vencimento, receber, margem, ruptura, override manual da programação
+   ====================================================================== */
+function buildItem(raw, idx){
+  return {
+    key: 'item_' + idx,
+    code: raw.code,
+    name: raw.name,
+    category: raw.category,               // 'termolabil' | 'termoestavel'
+    fe: raw.fe || 1,                       // unidades por embalagem
+    unidade: 'un',
+    selecionado: false,                    // "No pedido" — substitui o seletor duplicado da Calculadora
+    consumoM1: 0, consumoM2: 0, consumoM3: 0,
+    estoque: 0, reservado: 0, vencimento: 0, receber: 0,
+    margem: 0,
+    ruptura: false,
+    rupturaDesde: null,   // data (AAAA-MM-DD) em que a ruptura começou — usada no export "Medicamentos em falta"
+    manualOverride: false,
+    programacaoManual: null,
+    ajustadoPor: null,   // nome de quem fez o último ajuste manual (auditoria)
+    ajustadoEm: null,    // data/hora desse ajuste
+    // Indicadores de atendimento/almoxarifado — só chegam pela aba Importação,
+    // nunca são digitados à mão; alimentam o Painel, não o motor de cálculo CEAF/SIGAF.
+    pacientesAgendados: null,          // pacientes com retorno agendado (planilha Agendamento)
+    pacientesAtendidosEstoque: null,   // quantos pacientes o estoque atual consegue cobrir
+    pacientesAtendidosMedia: null,     // média mensal de pacientes atendidos (planilha Atendimento)
+    consumoMedioPorPaciente: null,     // unidades do medicamento por paciente/mês
+    medicamentosDispensadosMes: null,  // total de unidades dispensadas no mês mais recente
+    indicadoresAtualizadosEm: null     // data/hora da última importação que tocou estes campos
+  };
+}
+
+const ITEMS = RAW_CATALOG.map(buildItem);
+const itemsByKey = {}; ITEMS.forEach(i=> itemsByKey[i.key]=i);
+
+// Índices de busca para a Importação: por código SIGAF (Almoxarifado) e por nome
+// normalizado (Atendimento, Agendamento e planilhas "Consolidado", que não trazem código).
+function normName(s){
+  return String(s||'').trim().toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ');
+}
+const itemsByCode = {};
+ITEMS.forEach(it=>{ const c=String(it.code||'').trim(); if(c){ (itemsByCode[c]=itemsByCode[c]||[]).push(it); } });
+const itemsByName = {};
+ITEMS.forEach(it=>{ const n=normName(it.name); (itemsByName[n]=itemsByName[n]||[]).push(it); });
+
+let periodo = { estabCnes:'', estabNome:'', estabResponsavel:'', estabEmail:'' };
+let autosaveEnabled = true, autosaveTimer = null;
+const AUTOSAVE_KEY = 'sistemaUnicoCeaf_v1';
+const AUTOSAVE_DELAY = 900;
+
+/* ======================================================================
+   FASE 2 — MOTOR DE CÁLCULO ÚNICO (fórmula oficial CEAF/SIGAF)
+   Portado da Calculadora de Programação original. É o único lugar do
+   sistema que calcula quantidades — usado tanto na Etapa 2/4 do Pedido
+   quanto no Painel, na aba Itens Cadastrados (coluna Status) e nos
+   Relatórios. Substitui a fórmula genérica que "Gerar Pedido" usava.
+   ====================================================================== */
+function hojeISO(){
+  const d = new Date(); const tz = d.getTimezoneOffset();
+  return new Date(d.getTime()-tz*60000).toISOString().slice(0,10);
+}
+// Último dia do mês seguinte ao atual — usado como padrão sugerido para "Data fim de cobertura".
+function ultimoDiaMesSeguinteISO(){
+  const hoje = new Date();
+  const ultimo = new Date(hoje.getFullYear(), hoje.getMonth()+2, 0); // dia 0 do mês+2 = último dia do mês+1 (o mês seguinte)
+  const tz = ultimo.getTimezoneOffset();
+  return new Date(ultimo.getTime()-tz*60000).toISOString().slice(0,10);
+}
+function parseDate(v){ if(!v) return null; const d=new Date(v+'T00:00:00'); return isNaN(d.getTime())?null:d; }
+function daysBetween(a,b){ if(!a||!b) return 0; return Math.round((b-a)/86400000); }
+function fmtDate(d){ return d ? d.toLocaleDateString('pt-BR') : '—'; }
+
+function trendBadgeHtml(r){
+  if(r.tendencia==='alta') return `<span class="trend alta" title="Consumo subiu ${r.tendenciaPct.toFixed(0)}% de M1 para M3">▲ alta</span>`;
+  if(r.tendencia==='queda') return `<span class="trend queda" title="Consumo caiu ${Math.abs(r.tendenciaPct).toFixed(0)}% de M1 para M3">▼ queda</span>`;
+  return `<span class="trend estavel">– estável</span>`;
+}
+function abcBadgeHtml(it){
+  if(!it.classeABC) return '<span style="color:var(--ink-soft);font-size:11px;">—</span>';
+  const tips = {A:'Classe A: entre os itens que somam 80% do consumo total — prioridade máxima de atenção.',
+                B:'Classe B: entre os itens que somam os 15% seguintes do consumo total.',
+                C:'Classe C: entre os itens que somam os últimos 5% do consumo total — baixo impacto individual.'};
+  return `<span class="abc-badge ${it.classeABC}" title="${tips[it.classeABC]}">${it.classeABC}</span>`;
+}
+function coberturaBadgeHtml(r){
+  if(r.coberturaDias===null) return '<span style="color:var(--ink-soft);font-size:11px;">sem consumo</span>';
+  return `<span class="status-badge ${r.coberturaNivel}"><span class="dot"></span>${r.coberturaDias} d</span>`;
+}
+// Fecha o ciclo "vi o problema → resolvi o problema": clicar no nome de um item em
+// qualquer lista de prioridade do Painel leva direto pra ele em Parametrização,
+// já filtrado pela busca — sem precisar procurar manualmente entre 315 itens.
+function focarItemParam(key){
+  const it = itemsByKey[key];
+  if(!it) return;
+  switchTab('param');
+  document.getElementById('itemsSearch').value = it.code || it.name;
+  renderItemsTable();
+  const table = document.getElementById('itemsTable');
+  if(table) table.scrollIntoView({behavior:'smooth', block:'start'});
+}
+window.focarItemParam = focarItemParam;
+function itemLinkHtml(it){
+  return `<span class="item-link" onclick="focarItemParam('${it.key}')" title="Ver e editar este item em Parametrização">${it.name}</span>`;
+}
+function ajusteTooltip(it, necessaria){
+  if(!it.manualOverride) return '';
+  const quem = it.ajustadoPor || 'Não identificado';
+  const quando = it.ajustadoEm ? new Date(it.ajustadoEm).toLocaleString('pt-BR') : '';
+  return `<span class="hint" data-tip="Ajustado por ${quem}${quando?(' em '+quando):''}. Valor calculado automaticamente: ${necessaria}.">✎</span>`;
+}
+
+function getPeriodoState(){
+  const dA = parseDate(document.getElementById('dataAnalise').value);
+  const dI = parseDate(document.getElementById('dataInicio').value);
+  const dF = parseDate(document.getElementById('dataFim').value);
+  const dEFrio = parseDate(document.getElementById('dataEntregaFrio').value);
+  const dEAmb = parseDate(document.getElementById('dataEntregaAmb').value);
+  const valid = validarDatas(dA,dI,dF,dEFrio,dEAmb);
+  const diasCobertura = (dI && dF && valid) ? Math.max(daysBetween(dI,dF),0) : 0;
+  const mesesCobertura = diasCobertura/30;
+  const diasAteEntregaFrio = (dA && dEFrio && valid) ? Math.max(daysBetween(dA,dEFrio),0) : 0;
+  const diasAteEntregaAmb  = (dA && dEAmb  && valid) ? Math.max(daysBetween(dA,dEAmb),0)  : 0;
+  return {dA,dI,dF,dEFrio,dEAmb,valid,diasCobertura,mesesCobertura,diasAteEntregaFrio,diasAteEntregaAmb};
+}
+
+// Calcula todas as quantidades de um item, dado o período vigente.
+function calcularItem(item, per){
+  const cmm = Math.round((item.consumoM1+item.consumoM2+item.consumoM3)/3);
+  const consumoMax = Math.max(item.consumoM1,item.consumoM2,item.consumoM3);
+  const diasAteEntrega = item.category==='termolabil' ? per.diasAteEntregaFrio : per.diasAteEntregaAmb;
+  const aConsumir = Math.max(Math.round((cmm/30)*diasAteEntrega),0);
+  const futuro = Math.max(item.estoque - aConsumir - item.reservado - item.vencimento + item.receber, 0);
+  const seguranca = Math.ceil(cmm * per.mesesCobertura * (item.margem/100));
+  const necessaria = Math.max(Math.ceil(cmm*per.mesesCobertura) + seguranca - futuro, 0);
+  const fe = Math.max(item.fe||1,1);
+  const programacao = (item.manualOverride && item.programacaoManual!=null) ? item.programacaoManual : necessaria;
+  const sugerida = Math.ceil(programacao/fe)*fe;
+  const excedente = Math.max(futuro-necessaria,0);
+  const pedidoExcedente = Math.max(sugerida-necessaria,0);
+
+  const semNoData = !item.ruptura && cmm===0 && item.estoque===0 && programacao===0;
+  const semHistorico = item.ruptura && cmm===0;
+  let status, label;
+  if(!per.valid || semNoData){ status='gray'; label='Sem dados'; }
+  else if(item.ruptura || (cmm>0 && futuro<cmm)){ status='red'; label = item.ruptura?'Ruptura de estoque':'Risco de desabastecimento'; }
+  else if(excedente>cmm && excedente>0){ status='amber'; label='Excedente'; }
+  else{ status='green'; label='Adequado'; }
+
+  // Tendência de consumo: compara o mês mais recente (M3) com o mais antigo (M1) dos três
+  // informados. Serve de alerta antecipado — a fórmula oficial só reage ao CMM já consolidado,
+  // então um consumo subindo rápido pode virar ruptura antes de aparecer no cálculo.
+  let tendencia = 'estavel', tendenciaPct = 0;
+  if(item.consumoM1>0){
+    tendenciaPct = ((item.consumoM3 - item.consumoM1) / item.consumoM1) * 100;
+    if(tendenciaPct >= 20) tendencia = 'alta';
+    else if(tendenciaPct <= -20) tendencia = 'queda';
+  } else if(item.consumoM3>0){
+    tendencia = 'alta'; tendenciaPct = 100; // saiu de zero para consumo — alta relevante mesmo sem base de cálculo
+  }
+
+  // Cobertura de estoque em dias: quantos dias o estoque atual (bruto, sem descontar o que
+  // ainda vai chegar até a entrega) dura no ritmo de consumo atual. Diferente do "Dias até
+  // ruptura" do Painel (que já projeta o consumo até a próxima entrega) — este é o número cru,
+  // mais simples de explicar: "estoque ÷ consumo diário".
+  let coberturaDias = null, coberturaNivel = 'gray';
+  if(cmm>0){
+    coberturaDias = Math.round((item.estoque/cmm)*30);
+    if(coberturaDias < diasAteEntrega) coberturaNivel = 'red';
+    else if(coberturaDias < diasAteEntrega*1.5) coberturaNivel = 'amber';
+    else coberturaNivel = 'green';
+  } else if(item.estoque>0){
+    coberturaNivel = 'green'; // tem estoque e nenhum consumo registrado — sem pressa
+  }
+
+  return {cmm,consumoMax,diasAteEntrega,aConsumir,futuro,seguranca,necessaria,programacao,fe,sugerida,
+          excedente,pedidoExcedente,status,label,semHistorico,semNoData,tendencia,tendenciaPct,
+          coberturaDias,coberturaNivel};
+}
+
+function validarDatas(dA,dI,dF,dEFrio,dEAmb){
+  const erros=[];
+  const list = document.getElementById('dateAlertList');
+  const box = document.getElementById('dateAlert');
+  if(!dA) erros.push('A <b>Data de análise do estoque</b> é obrigatória.');
+  if(!dI) erros.push('A <b>Data início de cobertura</b> é obrigatória.');
+  if(!dF) erros.push('A <b>Data fim de cobertura</b> é obrigatória.');
+  if(!dEFrio) erros.push('A <b>Data de entrega (termolábil)</b> é obrigatória.');
+  if(!dEAmb) erros.push('A <b>Data de entrega (termoestável)</b> é obrigatória.');
+  if(dI && dF && dF<dI) erros.push('A <b>Data fim de cobertura</b> não pode ser anterior à data início.');
+  if(dA && dF && dA>dF) erros.push('A <b>Data de análise</b> não pode ser posterior ao fim do período.');
+  if(dEFrio && dA && dEFrio<dA) erros.push('A entrega termolábil não pode ser anterior à data de análise.');
+  if(dEAmb && dA && dEAmb<dA) erros.push('A entrega termoestável não pode ser anterior à data de análise.');
+  if(list && box){
+    if(erros.length){ list.innerHTML = erros.map(e=>`<li>${e}</li>`).join(''); box.style.display='flex'; }
+    else { list.innerHTML=''; box.style.display='none'; }
+  }
+  return erros.length===0;
+}
+
+/* ---------------- Debounce (buscas) ---------------- */
+// Evita refazer a tabela inteira a cada tecla digitada nas buscas — espera 200ms
+// de pausa na digitação antes de filtrar. As funções abaixo já existem como
+// declarações de função (hoisted), então podem ser referenciadas aqui mesmo
+// aparecendo definidas mais adiante no arquivo.
+function debounce(fn, delay){
+  let timer;
+  return function(...args){
+    clearTimeout(timer);
+    timer = setTimeout(()=> fn.apply(this,args), delay);
+  };
+}
+const debouncedRenderItemsTable = debounce(()=>renderItemsTable(), 200);
+const debouncedRenderPedidoTable = debounce(()=>renderPedidoTable(), 200);
+const debouncedRenderPainelDetail = debounce(()=>renderPainelDetail(), 200);
+const debouncedRenderFornecimentoMunicipio = debounce(()=>renderFornecimentoMunicipio(), 200);
+window.debouncedRenderItemsTable = debouncedRenderItemsTable;
+window.debouncedRenderPedidoTable = debouncedRenderPedidoTable;
+window.debouncedRenderPainelDetail = debouncedRenderPainelDetail;
+window.debouncedRenderFornecimentoMunicipio = debouncedRenderFornecimentoMunicipio;
+
+/* ---------------- Tabs ---------------- */
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.tab-content').forEach(s=> s.classList.add('hidden'));
+  document.getElementById('tab-'+tab).classList.remove('hidden');
+  if(tab==='dashboard') renderDashboard();
+  if(tab==='import') renderImportLog();
+  if(tab==='param') renderItemsTable();
+  if(tab==='pedido') renderPedidoTudo();
+}
+window.switchTab = switchTab;
+document.querySelectorAll('.tab-btn').forEach(b=> b.addEventListener('click', ()=>switchTab(b.dataset.tab)));
+
+function filterPainelDetail(status){
+  switchTab('dashboard');
+  document.getElementById('painelDetailStatus').value = status || '';
+  renderPainelDetail();
+  const card = document.getElementById('painelDetailCard');
+  if(card && card.scrollIntoView) card.scrollIntoView({behavior:'smooth', block:'start'});
+}
+window.filterPainelDetail = filterPainelDetail;
+
+/* ---------------- Painel ---------------- */
+// Curva ABC de consumo: classifica cada item do catálogo pelo peso do seu CMM no consumo
+// total do serviço (regra 80/95/100). Roda sobre todo o catálogo com consumo>0, não só
+// os itens do pedido atual — é uma leitura de perfil de uso, como os indicadores de atendimento.
+function calcularCurvaABC(){
+  const comConsumo = ITEMS.map(it=> ({it, cmm: Math.round((it.consumoM1+it.consumoM2+it.consumoM3)/3)}))
+    .filter(x=> x.cmm>0)
+    .sort((a,b)=> b.cmm-a.cmm);
+  const total = comConsumo.reduce((s,x)=>s+x.cmm,0);
+  let acumulado = 0;
+  comConsumo.forEach(x=>{
+    acumulado += x.cmm;
+    const pct = total>0 ? (acumulado/total)*100 : 100;
+    x.it.classeABC = pct<=80 ? 'A' : (pct<=95 ? 'B' : 'C');
+  });
+  ITEMS.forEach(it=>{ if(it.classeABC===undefined || (it.consumoM1+it.consumoM2+it.consumoM3)===0) it.classeABC = null; });
+  return comConsumo;
+}
+
+function renderCurvaABC(){
+  const comConsumo = calcularCurvaABC(); // já ordenado por CMM desc, com it.classeABC atribuído
+  const semCard = document.getElementById('semCurvaABC');
+  const comCard = document.getElementById('comCurvaABC');
+  if(comConsumo.length===0){
+    semCard.classList.remove('hidden'); comCard.classList.add('hidden');
+    return;
+  }
+  semCard.classList.add('hidden'); comCard.classList.remove('hidden');
+
+  const total = comConsumo.reduce((s,x)=>s+x.cmm,0);
+  const porClasse = {A:0,B:0,C:0};
+  comConsumo.forEach(x=> porClasse[x.it.classeABC]++);
+  document.getElementById('abcCountA').textContent = porClasse.A;
+  document.getElementById('abcCountB').textContent = porClasse.B;
+  document.getElementById('abcCountC').textContent = porClasse.C;
+
+  const per = getPeriodoState();
+  const itensA = comConsumo.filter(x=> x.it.classeABC==='A');
+  document.getElementById('abcListBody').innerHTML = itensA.map(x=>{
+    const r = calcularItem(x.it, per);
+    const pct = total>0 ? ((x.cmm/total)*100).toFixed(1) : '0.0';
+    return `<tr><td class="name">${itemLinkHtml(x.it)}</td><td class="result">${x.cmm}</td><td>${trendBadgeHtml(r)}</td><td class="result">${pct}%</td></tr>`;
+  }).join('') || '<tr class="empty-row"><td colspan="4">Nenhum item de classe A.</td></tr>';
+}
+window.renderCurvaABC = renderCurvaABC;
+
+// Vencimento e perdas: itens próximos ao vencimento (campo "Vencim. próx.", vindo de
+// Parametrização ou da importação de Almoxarifado) e uma perda estimada — quanto dessa
+// quantidade o consumo atual não vai conseguir usar dentro do prazo configurado.
+function renderVencimentoPerdas(){
+  const comVencimento = ITEMS.filter(it=> it.vencimento>0);
+  const semCard = document.getElementById('semVencimento');
+  const comCard = document.getElementById('comVencimento');
+  if(comVencimento.length===0){
+    semCard.classList.remove('hidden'); comCard.classList.add('hidden');
+    return;
+  }
+  semCard.classList.add('hidden'); comCard.classList.remove('hidden');
+
+  const totalUnidades = comVencimento.reduce((s,it)=>s+it.vencimento,0);
+  document.getElementById('vencItensCount').textContent = comVencimento.length;
+  document.getElementById('vencUnidades').textContent = totalUnidades;
+
+  const ranked = comVencimento.slice().sort((a,b)=> b.vencimento-a.vencimento).slice(0,10);
+  document.getElementById('vencListaBody').innerHTML = ranked.map(it=>{
+    const pct = it.estoque>0 ? Math.min(((it.vencimento/it.estoque)*100),100).toFixed(0) : '—';
+    return `<tr><td class="name">${itemLinkHtml(it)}</td><td class="result">${it.vencimento}</td><td class="result">${pct}${pct!=='—'?'%':''}</td></tr>`;
+  }).join('');
+
+  const prazoDias = parseInt(document.getElementById('prazoVencimentoDias').value,10) || 30;
+  const comPerda = comVencimento.map(it=>{
+    const cmm = Math.round((it.consumoM1+it.consumoM2+it.consumoM3)/3);
+    const consumivel = Math.round((cmm/30)*prazoDias);
+    const perda = Math.max(it.vencimento - consumivel, 0);
+    return {it, consumivel, perda};
+  }).filter(x=> x.perda>0).sort((a,b)=> b.perda-a.perda);
+
+  const perdaTotal = comPerda.reduce((s,x)=>s+x.perda,0);
+  document.getElementById('vencPerdaEstimada').textContent = perdaTotal;
+  document.getElementById('perdaListaBody').innerHTML = comPerda.slice(0,10).map(({it,consumivel,perda})=>
+    `<tr><td class="name">${itemLinkHtml(it)}</td><td class="result">${it.vencimento}</td><td class="result">${consumivel}</td><td class="result" style="color:var(--red);">${perda}</td></tr>`
+  ).join('') || '<tr class="empty-row"><td colspan="4">Nenhuma perda estimada com o prazo atual — o consumo projetado dá conta de tudo que está próximo do vencimento.</td></tr>';
+}
+window.renderVencimentoPerdas = renderVencimentoPerdas;
+
+// Status da importação: mostra, para cada fonte de dados, a última vez que foi
+// importada nesta sessão (data/hora, arquivo e quantos itens foram atualizados) —
+// simplificado a 4 linhas, uma por tipo de arquivo aceito na aba Importação.
+function renderStatusImportacao(){
+  const fontes = [
+    {tipo:'Atendimento', icon:'📋', titulo:'Dispensações (Atendimento)'},
+    {tipo:'Agendamento', icon:'📅', titulo:'Agendamentos'},
+    {tipo:'Almoxarifado', icon:'📦', titulo:'Almoxarifado (estoque)'},
+    {tipo:'CSV simplificado', icon:'📄', titulo:'CSV simplificado'}
+  ];
+  const grid = document.getElementById('statusImportGrid');
+  grid.innerHTML = fontes.map(f=>{
+    const ultima = importLog.find(l=> l.tipo===f.tipo); // importLog vem mais recente primeiro
+    if(!ultima){
+      return `<div class="status-import-tile pending" onclick="switchTab('import')">
+        <div class="sit-icon">${f.icon}</div>
+        <div class="sit-body">
+          <div class="sit-title">${f.titulo}</div>
+          <div class="sit-status">⚪ Nunca importado</div>
+          <div class="sit-detail">Clique para importar</div>
+        </div>
+      </div>`;
+    }
+    const quando = new Date(ultima.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<div class="status-import-tile ok" onclick="switchTab('import')">
+      <div class="sit-icon">${f.icon}</div>
+      <div class="sit-body">
+        <div class="sit-title">${f.titulo}</div>
+        <div class="sit-status">✓ Importado</div>
+        <div class="sit-detail">${quando}<br>${ultima.arquivo} · ${ultima.atualizados} ${ultima.atualizados===1?'item atualizado':'itens atualizados'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.renderStatusImportacao = renderStatusImportacao;
+
+// "Comece por aqui": no primeiro uso (nada importado, nada selecionado), mostra um
+// checklist de 3 passos. Depois disso, vira um resumo priorizado do que precisa de
+// atenção agora — pensado para quem não tem prática em almoxarifado farmacêutico
+// decidir rapidamente por onde começar, sem precisar entender todos os indicadores.
+function renderComecePorAqui(per, results, cont){
+  const primeiraVez = importLog.length===0 && results.length===0;
+  document.getElementById('primeiraVezBox').classList.toggle('hidden', !primeiraVez);
+  document.getElementById('resumoAcaoBox').classList.toggle('hidden', primeiraVez);
+  if(primeiraVez) return;
+
+  const acoes = []; // {nivel, texto, botaoLabel, acao}
+  if(!per.valid){
+    acoes.push({nivel:'red', texto:'O período de cobertura ainda não está completo — os cálculos abaixo não funcionam sem ele.', botao:'Definir período', acao:"switchTab('param')"});
+  }
+  if(results.length===0){
+    acoes.push({nivel:'amber', texto:'Nenhum item foi marcado "No pedido" ainda.', botao:'Selecionar itens', acao:"switchTab('param')"});
+  } else {
+    if(cont.red>0){
+      acoes.push({nivel:'red', texto:`${cont.red} ${cont.red===1?'item está':'itens estão'} em risco de desabastecimento.`, botao:'Ver quais', acao:"filterPainelDetail('red')"});
+    }
+    if(cont.gray>0){
+      acoes.push({nivel:'amber', texto:`${cont.gray} ${cont.gray===1?'item':'itens'} no pedido ainda sem consumo ou estoque suficiente para calcular.`, botao:'Ver quais', acao:"filterPainelDetail('gray')"});
+    }
+  }
+  // Perda estimada por vencimento (prazo padrão de 30 dias, mesmo cálculo do card "Vencimento e perdas")
+  const comPerda = ITEMS.filter(it=> it.vencimento>0).map(it=>{
+    const cmm = Math.round((it.consumoM1+it.consumoM2+it.consumoM3)/3);
+    const consumivel = Math.round((cmm/30)*30);
+    return Math.max(it.vencimento-consumivel,0);
+  }).reduce((s,v)=>s+v,0);
+  if(comPerda>0){
+    acoes.push({nivel:'amber', texto:`Cerca de ${comPerda} unidades próximas do vencimento correm risco de virar perda.`, botao:'Ver itens', acao:"document.getElementById('vencPerdaEstimada').scrollIntoView({behavior:'smooth',block:'center'})"});
+  }
+  // Déficit de agenda (pacientes agendados > estoque cobre) — só existe se houver dado de Consolidado/Atendimento importado
+  const deficitCount = ITEMS.filter(it=> it.pacientesAgendados!=null && it.pacientesAtendidosEstoque!=null && it.pacientesAgendados>it.pacientesAtendidosEstoque).length;
+  if(deficitCount>0){
+    acoes.push({nivel:'amber', texto:`${deficitCount} ${deficitCount===1?'item tem':'itens têm'} mais pacientes agendados do que o estoque atual consegue cobrir.`, botao:'Ver itens', acao:"document.getElementById('usoDeficitBody').scrollIntoView({behavior:'smooth',block:'center'})"});
+  }
+  if(cont.amber>0 && results.length>0){
+    acoes.push({nivel:'blue', texto:`${cont.amber} ${cont.amber===1?'item está':'itens estão'} com estoque excedente — vale rever a quantidade programada.`, botao:'Ver quais', acao:"filterPainelDetail('amber')"});
+  }
+
+  const badge = document.getElementById('statusGeralBadge');
+  const titulo = document.getElementById('statusGeralTitulo');
+  if(!per.valid || results.length===0){ badge.textContent='⚪'; titulo.textContent='Configuração pendente'; }
+  else if(cont.red>0){ badge.textContent='🔴'; titulo.textContent='Precisa de atenção urgente'; }
+  else if(acoes.length>0){ badge.textContent='🟡'; titulo.textContent='Alguns pontos para revisar'; }
+  else { badge.textContent='🟢'; titulo.textContent='Tudo em ordem'; }
+
+  const lista = document.getElementById('oQueFazerLista');
+  if(acoes.length===0){
+    lista.innerHTML = `<div style="font-size:13px;color:var(--ink-soft);">Nenhuma pendência crítica encontrada no pedido atual. Bom trabalho!</div>`;
+  } else {
+    lista.innerHTML = acoes.slice(0,5).map(a=>
+      `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span class="status-badge ${a.nivel}"><span class="dot"></span></span>
+        <span style="font-size:13px;flex:1;min-width:200px;">${a.texto}</span>
+        <button class="ghost small" onclick="${a.acao}">${a.botao} →</button>
+      </div>`
+    ).join('');
+  }
+}
+window.renderComecePorAqui = renderComecePorAqui;
+
+function renderDashboard(){
+  const per = getPeriodoState();
+  calcularCurvaABC();
+  const results = selectedItems().map(it=> ({it, r: calcularItem(it, per)}));
+
+  // KPIs
+  let red=0,amber=0,green=0,gray=0;
+  results.forEach(({r})=>{ if(r.status==='red') red++; else if(r.status==='amber') amber++; else if(r.status==='green') green++; else gray++; });
+  renderComecePorAqui(per, results, {red,amber,green,gray});
+  document.getElementById('dashRed').textContent=red;
+  document.getElementById('dashAmber').textContent=amber;
+  document.getElementById('dashGreen').textContent=green;
+  document.getElementById('dashGray').textContent=gray;
+  document.getElementById('dashSelected').textContent=results.length;
+  document.getElementById('dashTotal').textContent=ITEMS.length;
+  document.getElementById('dashFrio').textContent = ITEMS.filter(i=>i.category==='termolabil').length;
+  document.getElementById('dashAmb').textContent = ITEMS.filter(i=>i.category==='termoestavel').length;
+
+  document.getElementById('periodoIncompletoAlert').classList.toggle('hidden', per.valid);
+
+  // Linha do tempo (antiga Etapa 3 da Calculadora, agora só no Painel)
+  document.getElementById('lblAnalise').textContent = fmtDate(per.dA);
+  document.getElementById('lblInicio').textContent = fmtDate(per.dI);
+  document.getElementById('lblEntregaFrio').textContent = fmtDate(per.dEFrio);
+  document.getElementById('lblEntregaAmb').textContent = fmtDate(per.dEAmb);
+  document.getElementById('lblFim').textContent = fmtDate(per.dF);
+  let pct = 0;
+  if(per.dA && per.dF && per.dF>per.dA){
+    const total = daysBetween(per.dA,per.dF);
+    const toInicio = per.dI ? daysBetween(per.dA,per.dI) : 0;
+    pct = total>0 ? Math.min(Math.max((toInicio/total)*100,0),100) : 0;
+  }
+  document.getElementById('timelineFill').style.width = pct+'%';
+  posicionarMarcador('markerFrio', per, per.dEFrio);
+  posicionarMarcador('markerAmb', per, per.dEAmb);
+
+  // Risco por categoria térmica
+  const cat = {termolabil:{red:0,amber:0,green:0,gray:0}, termoestavel:{red:0,amber:0,green:0,gray:0}};
+  results.forEach(({it,r})=>{ cat[it.category][r.status]++; });
+  document.getElementById('catFrioRed').textContent = cat.termolabil.red;
+  document.getElementById('catFrioAmber').textContent = cat.termolabil.amber;
+  document.getElementById('catFrioGreen').textContent = cat.termolabil.green;
+  document.getElementById('catFrioGray').textContent = cat.termolabil.gray;
+  document.getElementById('catAmbRed').textContent = cat.termoestavel.red;
+  document.getElementById('catAmbAmber').textContent = cat.termoestavel.amber;
+  document.getElementById('catAmbGreen').textContent = cat.termoestavel.green;
+  document.getElementById('catAmbGray').textContent = cat.termoestavel.gray;
+
+  // Itens que exigem atenção: ranking de risco (dias até ruptura) e de excedente
+  const criticos = results.filter(({r})=> r.status==='red').map(({it,r})=>{
+    const diasRuptura = r.cmm>0 ? Math.max(Math.floor((r.futuro/r.cmm)*30),0) : (r.futuro<=0 ? 0 : null);
+    return {it,r,diasRuptura};
+  }).sort((a,b)=>{
+    const da = a.diasRuptura===null ? -1 : a.diasRuptura; // sem histórico = mais urgente
+    const db = b.diasRuptura===null ? -1 : b.diasRuptura;
+    return da-db;
+  }).slice(0,8);
+  const criticosBody = document.getElementById('criticosBody');
+  criticosBody.innerHTML = criticos.length ? criticos.map(({it,r,diasRuptura})=>
+    `<tr><td class="name">${itemLinkHtml(it)}</td><td class="result">${diasRuptura===null?'sem histórico':diasRuptura+' d'}</td><td class="result">${r.necessaria}</td></tr>`
+  ).join('') : '<tr class="empty-row"><td colspan="3">Nenhum item em risco.</td></tr>';
+
+  const excedentes = results.filter(({r})=> r.status==='amber').sort((a,b)=> b.r.excedente-a.r.excedente).slice(0,8);
+  const excedentesBody = document.getElementById('excedentesBody');
+  excedentesBody.innerHTML = excedentes.length ? excedentes.map(({it,r})=>
+    `<tr><td class="name">${itemLinkHtml(it)}</td><td class="result">${r.excedente}</td><td class="result">${r.futuro}</td></tr>`
+  ).join('') : '<tr class="empty-row"><td colspan="3">Nenhum item excedente.</td></tr>';
+
+  renderIndicadoresUso();
+  renderFornecimentoMunicipio();
+  renderCurvaABC();
+  renderVencimentoPerdas();
+  renderStatusImportacao();
+  renderPainelDetail();
+}
+
+// Indicadores de atendimento e almoxarifado (Qtd. Pacientes / Qtd. Medicamento) —
+// calculados sobre TODOS os itens com dado importado, independente de estarem no pedido atual.
+function renderIndicadoresUso(){
+  const comDados = ITEMS.filter(it=> it.pacientesAgendados!=null || it.pacientesAtendidosEstoque!=null || it.pacientesAtendidosMedia!=null || it.medicamentosDispensadosMes!=null);
+  document.getElementById('semIndicadoresUso').classList.toggle('hidden', comDados.length>0);
+  document.getElementById('comIndicadoresUso').classList.toggle('hidden', comDados.length===0);
+
+  const somaAgendados = comDados.reduce((s,it)=> s+(it.pacientesAgendados||0),0);
+  const somaAtendidos = comDados.reduce((s,it)=> s+(it.pacientesAtendidosMedia||0),0);
+  const somaMedicamentos = comDados.reduce((s,it)=> s+(it.medicamentosDispensadosMes||0),0);
+  document.getElementById('usoItensComDados').textContent = comDados.length;
+  document.getElementById('usoPacientesAgendados').textContent = somaAgendados;
+  document.getElementById('usoPacientesAtendidos').textContent = somaAtendidos;
+  document.getElementById('usoMedicamentosMes').textContent = somaMedicamentos;
+
+  const deficitTodos = comDados
+    .filter(it=> it.pacientesAgendados!=null && it.pacientesAtendidosEstoque!=null && it.pacientesAgendados > it.pacientesAtendidosEstoque)
+    .map(it=> ({it, deficit: it.pacientesAgendados - it.pacientesAtendidosEstoque}))
+    .sort((a,b)=> b.deficit-a.deficit);
+  const deficit = deficitTodos.slice(0,8);
+  document.getElementById('usoDeficitCount').textContent = deficitTodos.length>8 ? `Mostrando os 8 maiores de ${deficitTodos.length} itens com déficit.` : '';
+  const deficitBody = document.getElementById('usoDeficitBody');
+  deficitBody.innerHTML = deficit.length ? deficit.map(({it,deficit})=>
+    `<tr><td class="name">${itemLinkHtml(it)}</td><td class="result">${it.pacientesAgendados}</td><td class="result">${it.pacientesAtendidosEstoque}</td><td class="result">${deficit}</td></tr>`
+  ).join('') : '<tr class="empty-row"><td colspan="4">Nenhum item com déficit identificado.</td></tr>';
+}
+
+// Medicamentos fornecidos por tipo e município, no mês (dados da planilha de Atendimento)
+function popularFiltroMunicipios(){
+  const sel = document.getElementById('fmMunicipioFiltro');
+  const atual = sel.value;
+  const municipios = [...new Set(fornecimentoMunicipio.map(f=>f.municipio))].sort((a,b)=> a.localeCompare(b,'pt-BR'));
+  sel.innerHTML = '<option value="">Todos os municípios</option>' + municipios.map(m=>`<option value="${m}">${m}</option>`).join('');
+  if(municipios.includes(atual)) sel.value = atual;
+}
+
+function renderFornecimentoMunicipio(){
+  const semDados = document.getElementById('semFornecimentoMunicipio');
+  const comDados = document.getElementById('comFornecimentoMunicipio');
+  if(fornecimentoMunicipio.length===0){
+    semDados.classList.remove('hidden'); comDados.classList.add('hidden');
+    return;
+  }
+  semDados.classList.add('hidden'); comDados.classList.remove('hidden');
+  popularFiltroMunicipios();
+
+  const totalMes = fornecimentoMunicipio.reduce((s,f)=>s+f.quantidade,0);
+  const municipiosUnicos = new Set(fornecimentoMunicipio.map(f=>f.municipio));
+  const medsUnicos = new Set(fornecimentoMunicipio.map(f=>f.nome));
+  document.getElementById('fmTotalMes').textContent = totalMes;
+  document.getElementById('fmMunicipios').textContent = municipiosUnicos.size;
+  document.getElementById('fmMedicamentos').textContent = medsUnicos.size;
+
+  // ranking de municípios
+  const porMunicipio = {};
+  fornecimentoMunicipio.forEach(f=>{
+    if(!porMunicipio[f.municipio]) porMunicipio[f.municipio] = {quantidade:0, meds:new Set()};
+    porMunicipio[f.municipio].quantidade += f.quantidade;
+    porMunicipio[f.municipio].meds.add(f.nome);
+  });
+  const ranking = Object.entries(porMunicipio).sort((a,b)=> b[1].quantidade-a[1].quantidade).slice(0,15);
+  document.getElementById('fmRankingBody').innerHTML = ranking.map(([mun,d])=>
+    `<tr><td class="name">${mun}</td><td class="result">${d.quantidade}</td><td class="result">${d.meds.size}</td></tr>`
+  ).join('') || '<tr class="empty-row"><td colspan="3">Sem dados.</td></tr>';
+
+  // detalhamento por medicamento e município
+  const q = document.getElementById('fmSearch').value.trim().toLowerCase();
+  const munF = document.getElementById('fmMunicipioFiltro').value;
+  const catF = document.getElementById('fmCategoriaFiltro').value;
+  let linhas = fornecimentoMunicipio.filter(f=>{
+    if(q && !f.nome.toLowerCase().includes(q)) return false;
+    if(munF && f.municipio!==munF) return false;
+    if(catF && f.categoria!==catF) return false;
+    return true;
+  }).sort((a,b)=> b.quantidade-a.quantidade);
+  const nota = document.getElementById('fmDetailNote');
+  const LIMITE = 300;
+  nota.textContent = linhas.length>LIMITE ? `Mostrando as ${LIMITE} maiores combinações de ${linhas.length} — refine os filtros ou exporte o CSV para ver tudo.` : `${linhas.length} combinação(ões) de medicamento e município.`;
+  document.getElementById('fmDetailBody').innerHTML = linhas.slice(0,LIMITE).map(f=>
+    `<tr><td class="name">${f.nome}</td><td>${f.categoria==='termolabil'?'Termolábil':(f.categoria==='termoestavel'?'Termoestável':'—')}</td><td>${f.municipio}</td><td class="result">${f.quantidade}</td></tr>`
+  ).join('') || '<tr class="empty-row"><td colspan="4">Nenhuma combinação para este filtro.</td></tr>';
+}
+window.renderFornecimentoMunicipio = renderFornecimentoMunicipio;
+
+function exportFornecimentoMunicipioCSV(){
+  const q = document.getElementById('fmSearch').value.trim().toLowerCase();
+  const munF = document.getElementById('fmMunicipioFiltro').value;
+  const catF = document.getElementById('fmCategoriaFiltro').value;
+  const rows = [['Medicamento','Categoria','Município','Quantidade fornecida no mês']];
+  fornecimentoMunicipio.filter(f=>{
+    if(q && !f.nome.toLowerCase().includes(q)) return false;
+    if(munF && f.municipio!==munF) return false;
+    if(catF && f.categoria!==catF) return false;
+    return true;
+  }).sort((a,b)=> b.quantidade-a.quantidade).forEach(f=>{
+    rows.push([f.nome, f.categoria==='termolabil'?'Termolábil':(f.categoria==='termoestavel'?'Termoestável':''), f.municipio, f.quantidade]);
+  });
+  downloadCSV(rows, `fornecimento-por-municipio-${fornecimentoMunicipioMes||hojeISO()}.csv`);
+}
+window.exportFornecimentoMunicipioCSV = exportFornecimentoMunicipioCSV;
+
+/* ---------------- Parametrização: itens (seleção + dados de programação) ---------------- */
+function renderItemsTable(){
+  const per = getPeriodoState();
+  calcularCurvaABC();
+  const q = document.getElementById('itemsSearch').value.trim().toLowerCase();
+  const catF = document.getElementById('itemsCatFilter').value;
+  const selF = document.getElementById('itemsSelFilter').value;
+  const body = document.getElementById('itemsBody');
+  let shown = 0;
+  const frag = document.createDocumentFragment();
+
+  ITEMS.forEach(it=>{
+    if(q && !(it.name.toLowerCase().includes(q) || it.code.toLowerCase().includes(q))) return;
+    if(catF && it.category!==catF) return;
+    if(selF!=='' && String(it.selecionado?1:0)!==selF) return;
+    shown++;
+    const r = calcularItem(it, per);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:center;"><input type="checkbox" ${it.selecionado?'checked':''} onchange="toggleSelecionado('${it.key}',this.checked)"></td>
+      <td style="text-align:center;">${abcBadgeHtml(it)}</td>
+      <td class="name">${it.name}${it.category==='termolabil'?' <span class="term-badge">termolábil</span>':''}</td>
+      <td class="code">${it.code||'—'}</td>
+      <td>${it.category==='termolabil'?'Termolábil':'Termoestável'}</td>
+      <td><input type="number" min="1" value="${it.fe}" onchange="updateItemField('${it.key}','fe',this.value)"></td>
+      <td><input type="number" min="0" value="${it.consumoM1}" onchange="updateItemField('${it.key}','consumoM1',this.value)"></td>
+      <td><input type="number" min="0" value="${it.consumoM2}" onchange="updateItemField('${it.key}','consumoM2',this.value)"></td>
+      <td><input type="number" min="0" value="${it.consumoM3}" onchange="updateItemField('${it.key}','consumoM3',this.value)"></td>
+      <td>${trendBadgeHtml(r)}</td>
+      <td><input type="number" min="0" value="${it.estoque}" onchange="updateItemField('${it.key}','estoque',this.value)"></td>
+      <td>${coberturaBadgeHtml(r)}</td>
+      <td><input type="number" min="0" value="${it.reservado}" onchange="updateItemField('${it.key}','reservado',this.value)"></td>
+      <td><input type="number" min="0" value="${it.vencimento}" onchange="updateItemField('${it.key}','vencimento',this.value)"></td>
+      <td><input type="number" min="0" value="${it.receber}" onchange="updateItemField('${it.key}','receber',this.value)"></td>
+      <td><input type="number" min="0" max="20" value="${it.margem}" onchange="updateItemField('${it.key}','margem',this.value)"></td>
+      <td><div class="prog-cell"><input type="checkbox" ${it.ruptura?'checked':''} onchange="updateItemField('${it.key}','ruptura',this.checked)" style="flex:0 0 auto;width:16px;height:16px;"><input type="date" value="${it.rupturaDesde||''}" ${it.ruptura?'':'disabled'} onchange="updateItemField('${it.key}','rupturaDesde',this.value)" style="min-width:118px;"></div></td>
+      <td class="result">${r.necessaria}</td>
+      <td><div class="prog-cell"><input type="number" min="0" placeholder="${r.necessaria}" value="${it.manualOverride && it.programacaoManual!=null ? it.programacaoManual : ''}" onchange="setProgramacaoManual('${it.key}',this.value)">${ajusteTooltip(it, r.necessaria)}</div></td>
+    `;
+    frag.appendChild(tr);
+  });
+  body.innerHTML='';
+  if(shown===0){
+    body.innerHTML = `<tr class="empty-row"><td colspan="19">Nenhum item encontrado para este filtro.</td></tr>`;
+  } else {
+    body.appendChild(frag);
+  }
+  document.getElementById('itemsCount').textContent = `${shown} de ${ITEMS.length} itens`;
+}
+window.renderItemsTable = renderItemsTable;
+
+function toggleSelecionado(key, checked){
+  itemsByKey[key].selecionado = checked;
+  renderItemsTable(); renderDashboard(); scheduleAutosave();
+}
+window.toggleSelecionado = toggleSelecionado;
+
+function updateItemField(key, field, val){
+  const it = itemsByKey[key];
+  if(field==='ruptura'){
+    it.ruptura = !!val;
+    if(it.ruptura && !it.rupturaDesde) it.rupturaDesde = hojeISO(); // sugere hoje; dá pra corrigir na data ao lado
+    if(!it.ruptura) it.rupturaDesde = null;
+  }
+  else if(field==='rupturaDesde'){ it.rupturaDesde = val || null; }
+  else { it[field] = parseFloat(val)||0; }
+  renderItemsTable();
+  scheduleAutosave();
+}
+window.updateItemField = updateItemField;
+
+function exportItemsCSV(){
+  const rows = [['Código','Nome','Categoria','Emb (un)','Consumo M1','Consumo M2','Consumo M3','Estoque','Reservado','Vencimento','A receber','Margem (%)','Ruptura','Ruptura desde','No pedido']];
+  ITEMS.forEach(it=> rows.push([it.code,it.name,it.category,it.fe,it.consumoM1,it.consumoM2,it.consumoM3,it.estoque,it.reservado,it.vencimento,it.receber,it.margem, it.ruptura?'sim':'não', it.rupturaDesde||'', it.selecionado?'sim':'não']));
+  downloadCSV(rows, 'itens-cadastrados.csv');
+}
+window.exportItemsCSV = exportItemsCSV;
+
+/* ----------------------------------------------------------------------
+   IMPORTADOR DE CSV — estoque / consumo M1-M3, por código SIGAF
+   Aceita ; ou , como separador, com ou sem aspas, e é tolerante a
+   variações de cabeçalho (acentos, maiúsculas, espaços vs. underscore).
+   Colunas reconhecidas: codigo (obrigatória) e qualquer combinação de
+   estoque, consumoM1, consumoM2, consumoM3, reservado, vencimento, receber.
+   Uma linha que não tenha uma dessas colunas simplesmente não altera
+   aquele campo no item — não zera por engano.
+   ---------------------------------------------------------------------- */
+const CSV_FIELD_ALIASES = {
+  codigo: ['codigo','código','code','codsigaf','codigosigaf','codigosgaf'],
+  estoque: ['estoque','estoquedisponivel','estoquedisp','saldo','saldoestoque','currentstock'],
+  consumoM1: ['consumom1','m1','consumo1','antepenultimomes','consumoantepenultimomes'],
+  consumoM2: ['consumom2','m2','consumo2','penultimomes','consumopenultimomes'],
+  consumoM3: ['consumom3','m3','consumo3','ultimomes','consumoultimomes'],
+  reservado: ['reservado','reservadooutrosprogramas','quantitativoreservado'],
+  vencimento: ['vencimento','vencimentoproximo','quantitativovencimento'],
+  receber: ['receber','areceber','quantitativoareceber']
+};
+
+function normalizeHeaderKey(h){
+  return String(h||'').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // remove acentos
+    .replace(/[\s_\-\.\/\\(),;:]+/g,''); // remove espaços/underscore/hífen/ponto/barra/parênteses/vírgula
+}
+
+// parser simples de CSV com suporte a aspas e ; ou , como delimitador
+function parseCSVText(text){
+  text = text.replace(/^\uFEFF/, '').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  const firstLine = text.split('\n',1)[0] || '';
+  const delim = (firstLine.split(';').length >= firstLine.split(',').length) ? ';' : ',';
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c==='"'){
+        if(text[i+1]==='"'){ field+='"'; i++; } else { inQuotes=false; }
+      } else { field += c; }
+    } else {
+      if(c==='"') inQuotes = true;
+      else if(c===delim){ row.push(field); field=''; }
+      else if(c==='\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else field += c;
+    }
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => String(c).trim()!==''));
+}
+
+function mapCSVHeader(headerRow){
+  const map = {}; // fieldName -> column index
+  headerRow.forEach((h, idx)=>{
+    const norm = normalizeHeaderKey(h);
+    for(const field in CSV_FIELD_ALIASES){
+      if(CSV_FIELD_ALIASES[field].includes(norm) && map[field]===undefined){ map[field] = idx; }
+    }
+  });
+  return map;
+}
+
+function downloadEstoqueCSVTemplate(){
+  const rows = [['codigo','estoque','consumoM1','consumoM2','consumoM3','reservado','vencimento','receber']];
+  const sample = selectedItems().length ? selectedItems() : ITEMS.slice(0,5);
+  sample.forEach(it=> rows.push([it.code, it.estoque, it.consumoM1, it.consumoM2, it.consumoM3, it.reservado, it.vencimento, it.receber]));
+  downloadCSV(rows, 'modelo-estoque-consumo.csv');
+}
+window.downloadEstoqueCSVTemplate = downloadEstoqueCSVTemplate;
+
+function showImportCsvResult(html, tone){
+  const box = document.getElementById('importCsvResult');
+  box.className = 'alert-box' + (tone==='warn' ? ' warn' : '');
+  box.style.display = 'flex';
+  box.innerHTML = `<span class="icon">${tone==='warn'?'!':'✓'}</span><div>${html}</div>`;
+}
+
+function processEstoqueCSV(text, arquivo){
+  const rows = parseCSVText(text);
+  if(rows.length < 2){
+    showImportCsvResult('O arquivo não tem linhas suficientes (é preciso um cabeçalho + ao menos uma linha de dados).', 'warn');
+    return;
+  }
+  const header = rows[0];
+  const map = mapCSVHeader(header);
+  if(map.codigo===undefined){
+    showImportCsvResult('Não encontrei uma coluna de <b>código</b> no CSV. Renomeie a coluna para "codigo" (ou baixe o modelo) e tente novamente.', 'warn');
+    return;
+  }
+  const dataFields = Object.keys(CSV_FIELD_ALIASES).filter(f=> f!=='codigo' && map[f]!==undefined);
+  if(dataFields.length===0){
+    showImportCsvResult('Nenhuma coluna reconhecida além do código. Colunas aceitas: estoque, consumoM1, consumoM2, consumoM3, reservado, vencimento, receber.', 'warn');
+    return;
+  }
+
+  const byCode = {};
+  ITEMS.forEach(it=>{ if(it.code) (byCode[String(it.code).trim()] = byCode[String(it.code).trim()]||[]).push(it); });
+
+  let matched=0, updatedFields=0;
+  const naoEncontrados = [];
+  for(let r=1;r<rows.length;r++){
+    const row = rows[r];
+    const codigo = String(row[map.codigo]||'').trim();
+    if(!codigo) continue;
+    const alvos = byCode[codigo];
+    if(!alvos || !alvos.length){ naoEncontrados.push(codigo); continue; }
+    matched++;
+    alvos.forEach(it=>{
+      dataFields.forEach(field=>{
+        const raw = row[map[field]];
+        if(raw===undefined || String(raw).trim()==='') return;
+        const num = parseFloat(String(raw).replace(',','.'));
+        if(isNaN(num)) return;
+        it[field] = num;
+        updatedFields++;
+      });
+    });
+  }
+
+  renderAll(); scheduleAutosave();
+  logImportacao('CSV simplificado', arquivo||'arquivo.csv', rows.length-1, matched, [...new Set(naoEncontrados)].length);
+
+  const parts = [`<b>${matched}</b> ${matched===1?'item encontrado':'itens encontrados'} por código`,
+                  `<b>${updatedFields}</b> ${updatedFields===1?'campo atualizado':'campos atualizados'}`];
+  let msg = parts.join(' · ') + '.';
+  if(naoEncontrados.length){
+    const uniq = [...new Set(naoEncontrados)];
+    msg += ` <br><b>${uniq.length}</b> código(s) do CSV não ${uniq.length===1?'foi encontrado':'foram encontrados'} no catálogo: ${uniq.slice(0,12).join(', ')}${uniq.length>12?'…':''}.`;
+  }
+  showImportCsvResult(msg, naoEncontrados.length ? 'warn' : null);
+}
+
+window.processEstoqueCSV = processEstoqueCSV;
+
+document.getElementById('inputImportEstoqueCSV').addEventListener('change', function(){
+  const file = this.files && this.files[0];
+  this.value = '';
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{ try{ processEstoqueCSV(reader.result, file.name); } catch(e){ showImportCsvResult('Não foi possível ler este CSV: ' + e.message, 'warn'); } };
+  reader.onerror = ()=> showImportCsvResult('Não foi possível ler o arquivo selecionado.', 'warn');
+  reader.readAsText(file, 'UTF-8');
+});
+
+/* ----------------------------------------------------------------------
+   IMPORTAÇÃO — planilhas do SIGAF (Atendimento, Agendamento, Almoxarifado)
+   e planilhas "Consolidado" já prontas. Cada planilha vira uma matriz de
+   linhas (array de arrays); .xlsx é lido com a SheetJS, .csv reaproveita
+   o parser já usado no atalho manual.
+   ---------------------------------------------------------------------- */
+let importLog = []; // {id, ts, tipo, arquivo, linhas, atualizados, naoEncontrados}
+let fornecimentoMunicipio = []; // [{nome, categoria, municipio, quantidade}] — mês mais recente da última importação de Atendimento
+let fornecimentoMunicipioMes = null; // 'AAAA-MM' do mês representado acima
+
+function readTabularFile(file){
+  const isXlsx = /\.(xlsx|xls)$/i.test(file.name);
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=> reject(new Error('Não foi possível ler o arquivo selecionado.'));
+    if(isXlsx){
+      reader.onload = ()=>{
+        try{
+          if(typeof XLSX === 'undefined') throw new Error('Biblioteca de leitura de planilhas (.xlsx) não carregou — verifique a conexão e tente novamente.');
+          const wb = XLSX.read(new Uint8Array(reader.result), {type:'array', cellDates:true});
+          const sheetName = wb.SheetNames[0];
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1, raw:true, defval:''});
+          resolve(rows);
+        }catch(e){ reject(e); }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.onload = ()=>{ try{ resolve(parseCSVText(reader.result)); } catch(e){ reject(e); } };
+      reader.readAsText(file, 'UTF-8');
+    }
+  });
+}
+
+// Acha a linha de cabeçalho: a primeira que contém pelo menos 2 dos termos esperados.
+function findHeaderRow(rows, expectedTerms){
+  for(let i=0;i<Math.min(rows.length,10);i++){
+    const norm = rows[i].map(c=> normalizeHeaderKey(c));
+    const hits = expectedTerms.filter(term=> norm.some(h=> h.includes(term)));
+    if(hits.length>=2) return i;
+  }
+  return 0;
+}
+
+function mapHeaderByAliases(headerRow, aliasMap){
+  const norms = headerRow.map(normalizeHeaderKey);
+  const map = {};
+  // 1ª passada: só bate se o cabeçalho normalizado for IGUAL a um dos apelidos
+  // (evita que uma coluna de observação mais longa, que só cita as mesmas
+  // palavras de passagem, seja confundida com a coluna de dados de fato).
+  for(const field in aliasMap){
+    for(let idx=0; idx<norms.length; idx++){
+      if(aliasMap[field].includes(norms[idx])){ map[field]=idx; break; }
+    }
+  }
+  // 2ª passada: para os campos que sobraram, aceita conter o apelido como trecho.
+  for(const field in aliasMap){
+    if(map[field]!==undefined) continue;
+    for(let idx=0; idx<norms.length; idx++){
+      if(aliasMap[field].some(alias=> norms[idx].includes(alias))){ map[field]=idx; break; }
+    }
+  }
+  return map;
+}
+
+function parseFlexibleDate(v){
+  if(v && typeof v==='object' && typeof v.getTime==='function' && !isNaN(v.getTime())) return v;
+  if(typeof v === 'number'){ // serial Excel
+    const d = new Date(Math.round((v-25569)*86400*1000));
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if(typeof v === 'string'){
+    const s = v.trim();
+    let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+    m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if(m) return new Date(+m[3], +m[2]-1, +m[1]);
+  }
+  return null;
+}
+function monthKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+
+function logImportacao(tipo, arquivo, linhas, atualizados, naoEncontrados){
+  importLog.unshift({id:'log_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), ts:Date.now(), tipo, arquivo, linhas, atualizados, naoEncontrados});
+  importLog = importLog.slice(0,30);
+  renderImportLog();
+  scheduleAutosave();
+}
+
+function renderImportLog(){
+  const body = document.getElementById('importLogBody');
+  if(!body) return;
+  if(importLog.length===0){
+    body.innerHTML = `<tr class="empty-row"><td colspan="6">Nenhuma importação registrada ainda nesta sessão.</td></tr>`;
+    return;
+  }
+  body.innerHTML = importLog.map(l=>
+    `<tr><td>${new Date(l.ts).toLocaleString('pt-BR')}</td><td>${l.tipo}</td><td>${l.arquivo}</td>
+     <td class="result">${l.linhas}</td><td class="result">${l.atualizados}</td><td class="result">${l.naoEncontrados}</td></tr>`
+  ).join('');
+}
+window.renderImportLog = renderImportLog;
+
+function limparHistoricoImportacao(){
+  if(!confirm('Limpar o histórico de importações desta sessão?')) return;
+  importLog = [];
+  renderImportLog(); scheduleAutosave();
+}
+window.limparHistoricoImportacao = limparHistoricoImportacao;
+
+function showResultBox(elId, html, tone){
+  const box = document.getElementById(elId);
+  box.className = 'alert-box' + (tone==='warn' ? ' warn' : '');
+  box.style.display = 'flex';
+  box.innerHTML = `<span class="icon">${tone==='warn'?'!':'✓'}</span><div>${html}</div>`;
+}
+
+function resumoMatch(matched, naoEncontrados, camposLabel){
+  const partes = [`<b>${matched}</b> ${matched===1?'item casado':'itens casados'}`];
+  if(camposLabel) partes.push(camposLabel);
+  let msg = partes.join(' · ') + '.';
+  if(naoEncontrados.length){
+    const uniq = [...new Set(naoEncontrados)];
+    msg += `<br><b>${uniq.length}</b> não ${uniq.length===1?'foi encontrado':'foram encontrados'} no catálogo: ${uniq.slice(0,10).join(', ')}${uniq.length>10?'…':''}.`;
+  }
+  return msg;
+}
+
+/* ---- 1. Atendimento (dispensações realizadas) → consumoM1-M3 + pacientesAtendidosMedia + medicamentosDispensadosMes ---- */
+async function processAtendimentoFile(file){
+  let rows;
+  try{ rows = await readTabularFile(file); } catch(e){ showResultBox('resultAtendimento', 'Não foi possível ler o arquivo: '+e.message, 'warn'); return; }
+  const headerIdx = findHeaderRow(rows, ['datadispensacao','medicamentoproduto','quantidadedomedicamento']);
+  const header = rows[headerIdx];
+  const map = mapHeaderByAliases(header, {
+    data: ['datadispensacao'],
+    nome: ['medicamentoprodutodescricaogenerica','medicamentoproduto'],
+    qtd: ['quantidadedomedicamentoouproduto','quantidadedispensada','quantidade'],
+    paciente: ['cnsdopaciente','nomedopaciente','paciente'],
+    municipio: ['municipioderesidenciadopaciente','municipiodoestabelecimento','municipio']
+  });
+  if(map.data===undefined || map.nome===undefined || map.qtd===undefined){
+    showResultBox('resultAtendimento', 'Não encontrei as colunas de data, medicamento e quantidade nesta planilha. Confira o cabeçalho esperado na descrição acima.', 'warn');
+    return;
+  }
+  // agrupa por (nome normalizado, mês): soma quantidade, conta pacientes distintos
+  const grupos = {}; // key nome|mes -> {qtd, pacientes:Set}
+  // agrupa também por (nome, município, mês), para o card "fornecimento por medicamento e município"
+  const gruposMunicipio = {}; // key nome|municipio|mes -> {nome, municipio, mes, qtd}
+  const naoEncontrados = [];
+  for(let r=headerIdx+1;r<rows.length;r++){
+    const row = rows[r]; if(!row || !row.length) continue;
+    const nomeRaw = row[map.nome]; if(!nomeRaw) continue;
+    const nome = normName(nomeRaw);
+    const d = parseFlexibleDate(row[map.data]); if(!d) continue;
+    const qtd = parseFloat(String(row[map.qtd]).replace(',','.'))||0;
+    const mes = monthKey(d);
+    const chave = nome+'|'+mes;
+    if(!grupos[chave]) grupos[chave] = {nome, mes, qtd:0, pacientes:new Set()};
+    grupos[chave].qtd += qtd;
+    if(map.paciente!==undefined && row[map.paciente]) grupos[chave].pacientes.add(String(row[map.paciente]));
+    if(map.municipio!==undefined){
+      const municipio = String(row[map.municipio]||'').trim();
+      if(municipio){
+        const chaveMun = nome+'|'+municipio+'|'+mes;
+        if(!gruposMunicipio[chaveMun]) gruposMunicipio[chaveMun] = {nome, municipio, mes, qtd:0};
+        gruposMunicipio[chaveMun].qtd += qtd;
+      }
+    }
+  }
+  // reagrupa por nome -> lista de meses ordenada
+  const porNome = {};
+  Object.values(grupos).forEach(g=>{ (porNome[g.nome]=porNome[g.nome]||[]).push(g); });
+
+  let atualizados = 0;
+  const agora = Date.now();
+  Object.keys(porNome).forEach(nome=>{
+    const alvos = itemsByName[nome];
+    if(!alvos){ naoEncontrados.push(nome); return; }
+    const meses = porNome[nome].sort((a,b)=> a.mes<b.mes?-1:1);
+    const ultimos3 = meses.slice(-3);
+    const slots = ['consumoM1','consumoM2','consumoM3'];
+    const offset = 3 - ultimos3.length; // com menos de 3 meses, o(s) mês(es) disponível(is) ocupa(m) o(s) slot(s) mais recente(s)
+    atualizados++;
+    alvos.forEach(it=>{
+      ultimos3.forEach((g,i)=>{ it[slots[offset+i]] = Math.round(g.qtd); });
+      const mediaPacientes = meses.reduce((s,g)=>s+g.pacientes.size,0) / meses.length;
+      it.pacientesAtendidosMedia = Math.round(mediaPacientes);
+      const ultimo = meses[meses.length-1];
+      it.medicamentosDispensadosMes = Math.round(ultimo.qtd);
+      it.indicadoresAtualizadosEm = agora;
+    });
+  });
+
+  // Fornecimento por medicamento e município: usa o mês mais recente encontrado no arquivo inteiro
+  if(map.municipio!==undefined){
+    const todosMeses = Object.values(gruposMunicipio).map(g=>g.mes);
+    if(todosMeses.length){
+      const mesRecente = todosMeses.sort().slice(-1)[0];
+      fornecimentoMunicipio = Object.values(gruposMunicipio)
+        .filter(g=> g.mes===mesRecente)
+        .map(g=>{
+          const alvos = itemsByName[g.nome];
+          const item = alvos ? alvos[0] : null;
+          return {nome: item?item.name:g.nome, categoria: item?item.category:null, municipio:g.municipio, quantidade:Math.round(g.qtd)};
+        });
+      fornecimentoMunicipioMes = mesRecente;
+    }
+  }
+
+  showResultBox('resultAtendimento', resumoMatch(atualizados, naoEncontrados, `consumo mensal (M1–M3) e média de pacientes atendidos preenchidos a partir de ${Object.values(grupos).length} competência(s)/medicamento`));
+  logImportacao('Atendimento', file.name, rows.length-headerIdx-1, atualizados, [...new Set(naoEncontrados)].length);
+  renderAll();
+}
+
+/* ---- 2. Agendamento (retornos futuros) → pacientesAgendados ---- */
+async function processAgendamentoFile(file){
+  let rows;
+  try{ rows = await readTabularFile(file); } catch(e){ showResultBox('resultAgendamento', 'Não foi possível ler o arquivo: '+e.message, 'warn'); return; }
+  const headerIdx = findHeaderRow(rows, ['dataretorno','medicamentoproduto','paciente']);
+  const header = rows[headerIdx];
+  const map = mapHeaderByAliases(header, {
+    data: ['dataretorno'],
+    nome: ['medicamentoproduto'],
+    paciente: ['cpf','paciente']
+  });
+  if(map.nome===undefined){
+    showResultBox('resultAgendamento', 'Não encontrei a coluna com o nome do medicamento nesta planilha. Confira o cabeçalho esperado na descrição acima.', 'warn');
+    return;
+  }
+  const per = getPeriodoState();
+  const hoje = per.dA || new Date();
+  const porNome = {}; // nome -> Set(pacientes)
+  const naoEncontrados = [];
+  for(let r=headerIdx+1;r<rows.length;r++){
+    const row = rows[r]; if(!row || !row.length) continue;
+    const nomeRaw = row[map.nome]; if(!nomeRaw) continue;
+    const nome = normName(nomeRaw);
+    if(map.data!==undefined){
+      const d = parseFlexibleDate(row[map.data]);
+      if(d && d < hoje) continue; // só conta agendamentos futuros
+    }
+    if(!porNome[nome]) porNome[nome] = new Set();
+    const pacienteId = map.paciente!==undefined ? row[map.paciente] : (r+'');
+    porNome[nome].add(String(pacienteId||r));
+  }
+  let atualizados = 0;
+  const agora = Date.now();
+  Object.keys(porNome).forEach(nome=>{
+    const alvos = itemsByName[nome];
+    if(!alvos){ naoEncontrados.push(nome); return; }
+    atualizados++;
+    alvos.forEach(it=>{ it.pacientesAgendados = porNome[nome].size; it.indicadoresAtualizadosEm = agora; });
+  });
+  showResultBox('resultAgendamento', resumoMatch(atualizados, naoEncontrados, 'pacientes agendados (a partir de hoje) contados por medicamento'));
+  logImportacao('Agendamento', file.name, rows.length-headerIdx-1, atualizados, [...new Set(naoEncontrados)].length);
+  renderAll();
+}
+
+/* ---- 3. Almoxarifado (posição de estoque por lote) → estoque + vencimento ---- */
+async function processAlmoxarifadoFile(file){
+  let rows;
+  try{ rows = await readTabularFile(file); } catch(e){ showResultBox('resultAlmoxarifado', 'Não foi possível ler o arquivo: '+e.message, 'warn'); return; }
+  const headerIdx = findHeaderRow(rows, ['codsigafmedicamentoproduto','quantidadeemestoque','validade']);
+  const header = rows[headerIdx];
+  const map = mapHeaderByAliases(header, {
+    codigo: ['codsigafmedicamentoproduto','codigosigaf'],
+    qtd: ['quantidadeemestoque'],
+    validade: ['validade'],
+    bloqueado: ['bloqueado']
+  });
+  if(map.codigo===undefined || map.qtd===undefined){
+    showResultBox('resultAlmoxarifado', 'Não encontrei as colunas de código SIGAF e quantidade em estoque nesta planilha. Confira o cabeçalho esperado na descrição acima.', 'warn');
+    return;
+  }
+  const janelaDias = parseInt(document.getElementById('almoxJanelaVencimento').value,10) || 90;
+  const per = getPeriodoState();
+  const ref = per.dA || new Date();
+  const limite = new Date(ref.getTime() + janelaDias*86400000);
+
+  const porCodigo = {}; // codigo -> {estoque, vencimento}
+  const naoEncontrados = [];
+  for(let r=headerIdx+1;r<rows.length;r++){
+    const row = rows[r]; if(!row || !row.length) continue;
+    const codigo = String(row[map.codigo]||'').trim(); if(!codigo) continue;
+    const bloqueado = map.bloqueado!==undefined ? normalizeHeaderKey(row[map.bloqueado])==='sim' : false;
+    if(bloqueado) continue;
+    const qtd = parseFloat(String(row[map.qtd]).replace(',','.'))||0;
+    if(!porCodigo[codigo]) porCodigo[codigo] = {estoque:0, vencimento:0};
+    porCodigo[codigo].estoque += qtd;
+    if(map.validade!==undefined){
+      const d = parseFlexibleDate(row[map.validade]);
+      if(d && d <= limite) porCodigo[codigo].vencimento += qtd;
+    }
+  }
+  let atualizados = 0;
+  const agora = Date.now();
+  Object.keys(porCodigo).forEach(codigo=>{
+    const alvos = itemsByCode[codigo];
+    if(!alvos){ naoEncontrados.push(codigo); return; }
+    atualizados++;
+    alvos.forEach(it=>{
+      it.estoque = Math.round(porCodigo[codigo].estoque);
+      it.vencimento = Math.round(porCodigo[codigo].vencimento);
+      it.indicadoresAtualizadosEm = agora;
+    });
+  });
+  showResultBox('resultAlmoxarifado', resumoMatch(atualizados, naoEncontrados, `estoque somado por código (lotes bloqueados ignorados); vencimento em até ${janelaDias} dias contado à parte`));
+  logImportacao('Almoxarifado', file.name, rows.length-headerIdx-1, atualizados, [...new Set(naoEncontrados)].length);
+  renderAll();
+}
+
+/* ---- 4. Consolidado (indicadores já prontos por medicamento) ---- */
+async function processConsolidadoFile(file){
+  let rows;
+  try{ rows = await readTabularFile(file); } catch(e){ showResultBox('resultConsolidado', 'Não foi possível ler o arquivo: '+e.message, 'warn'); return; }
+  const headerIdx = findHeaderRow(rows, ['pacientesagendados','pacientesatendidosqueoestoque','mediademedicamentosporpaciente','mediadepacientesatendidos']);
+  const header = rows[headerIdx];
+  const map = mapHeaderByAliases(header, {
+    agendados: ['quantidadedepacientesagendados','pacientesagendados'],
+    atendidosEstoque: ['quantidadedepacientesatendidosqueoestoqueconseguecobrir','atendidosqueoestoqueconsegue'],
+    consumoPorPaciente: ['quantidademediademedicamentosporpaciente','mediademedicamentosporpaciente'],
+    atendidosMedia: ['quantidademediadepacientesatendidosnomes','mediadepacientesatendidosnomes'],
+    dispensadosMes: ['somadaquantidadedemedicamentosatendidosnomes','quantidadedemedicamentosatendidosnomes']
+  });
+  const nomeCol = 0; // primeira coluna = nome do medicamento, por convenção da planilha "Consolidado"
+  if(Object.keys(map).length===0){
+    showResultBox('resultConsolidado', 'Não encontrei nenhuma das colunas de indicadores esperadas. Confira os termos de cabeçalho na descrição acima.', 'warn');
+    return;
+  }
+  let atualizados = 0;
+  const naoEncontrados = [];
+  const agora = Date.now();
+  for(let r=headerIdx+1;r<rows.length;r++){
+    const row = rows[r]; if(!row || !row.length) continue;
+    const nomeRaw = row[nomeCol]; if(!nomeRaw) continue;
+    const nome = normName(nomeRaw);
+    const alvos = itemsByName[nome];
+    if(!alvos){ naoEncontrados.push(nomeRaw); continue; }
+    atualizados++;
+    alvos.forEach(it=>{
+      if(map.agendados!==undefined) it.pacientesAgendados = Math.round(parseFloat(row[map.agendados])||0);
+      if(map.atendidosEstoque!==undefined) it.pacientesAtendidosEstoque = Math.round(parseFloat(row[map.atendidosEstoque])||0);
+      if(map.consumoPorPaciente!==undefined) it.consumoMedioPorPaciente = parseFloat(row[map.consumoPorPaciente])||0;
+      if(map.atendidosMedia!==undefined) it.pacientesAtendidosMedia = Math.round(parseFloat(row[map.atendidosMedia])||0);
+      if(map.dispensadosMes!==undefined) it.medicamentosDispensadosMes = Math.round(parseFloat(row[map.dispensadosMes])||0);
+      it.indicadoresAtualizadosEm = agora;
+    });
+  }
+  showResultBox('resultConsolidado', resumoMatch(atualizados, naoEncontrados, 'indicadores de pacientes e medicamentos preenchidos direto do arquivo'));
+  logImportacao('Consolidado', file.name, rows.length-headerIdx-1, atualizados, [...new Set(naoEncontrados)].length);
+  renderAll();
+}
+
+function withLoadingFeedback(elId, fn){
+  return function(){
+    const f = this.files && this.files[0]; this.value='';
+    if(!f) return;
+    const box = document.getElementById(elId);
+    box.className = 'alert-box warn';
+    box.style.display = 'flex';
+    box.innerHTML = `<span class="icon">…</span><div>Lendo <b>${f.name}</b> — arquivos grandes (dezenas de milhares de linhas) podem levar de 10 a 30 segundos. Não feche esta aba.</div>`;
+    setTimeout(()=> fn(f), 30); // deixa o navegador pintar a mensagem acima antes de travar a thread lendo o arquivo
+  };
+}
+document.getElementById('inputAtendimento').addEventListener('change', withLoadingFeedback('resultAtendimento', processAtendimentoFile));
+document.getElementById('inputAgendamento').addEventListener('change', withLoadingFeedback('resultAgendamento', processAgendamentoFile));
+document.getElementById('inputAlmoxarifado').addEventListener('change', withLoadingFeedback('resultAlmoxarifado', processAlmoxarifadoFile));
+document.getElementById('inputConsolidado').addEventListener('change', withLoadingFeedback('resultConsolidado', processConsolidadoFile));
+
+/* ---------------- Pedido & Programação (Fase 3) ---------------- */
+function selectedItems(){ return ITEMS.filter(i=>i.selecionado); }
+
+function renderPedidoTudo(){
+  renderPedidoTable();
+  renderResumo();
+}
+
+function renderPedidoTable(){
+  const per = getPeriodoState();
+  const q = document.getElementById('pedidoSearch').value.trim().toLowerCase();
+  const body = document.getElementById('pedidoBody');
+  const items = selectedItems().filter(it=> !q || it.name.toLowerCase().includes(q) || it.code.toLowerCase().includes(q));
+  document.getElementById('pedidoCount').textContent = `${selectedItems().length} itens`;
+  if(items.length===0){
+    body.innerHTML = `<tr class="empty-row" id="pedidoEmptyRow"><td colspan="13">Nenhum item selecionado. Marque itens como "No pedido" na aba Parametrização.</td></tr>`;
+    return;
+  }
+  body.innerHTML = items.map(it=>{
+    const r = calcularItem(it, per);
+    return `<tr>
+      <td class="name">${it.name}${it.category==='termolabil'?' <span class="term-badge">termolábil</span>':''}</td>
+      <td class="code">${it.code||'—'}</td>
+      <td class="result">${r.cmm}</td>
+      <td>${coberturaBadgeHtml(r)}</td>
+      <td>${trendBadgeHtml(r)}</td>
+      <td class="result">${r.aConsumir}</td>
+      <td class="result">${r.futuro}</td>
+      <td class="result">${r.seguranca}</td>
+      <td class="result">${r.necessaria}</td>
+      <td class="result">${r.programacao} ${ajusteTooltip(it, r.necessaria)}</td>
+      <td class="result">${r.sugerida}</td>
+      <td class="result">${r.excedente}</td>
+      <td><span class="status-badge ${r.status}"><span class="dot"></span>${r.label}</span></td>
+    </tr>`;
+  }).join('');
+}
+window.renderPedidoTable = renderPedidoTable;
+
+function setProgramacaoManual(key, val){
+  const it = itemsByKey[key];
+  if(val===undefined || String(val).trim()===''){
+    it.manualOverride = false;
+    it.programacaoManual = null;
+    it.ajustadoPor = null;
+    it.ajustadoEm = null;
+  } else {
+    it.manualOverride = true;
+    it.programacaoManual = parseFloat(val)||0;
+    const nome = document.getElementById('usuarioAtualNome').value.trim();
+    it.ajustadoPor = nome || 'Não identificado';
+    it.ajustadoEm = Date.now();
+  }
+  renderItemsTable(); renderPedidoTudo(); renderDashboard(); scheduleAutosave();
+}
+window.setProgramacaoManual = setProgramacaoManual;
+
+function posicionarMarcador(id, per, data){
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(per.dA && per.dF && per.dF>per.dA && data){
+    const total = daysBetween(per.dA,per.dF);
+    const toData = daysBetween(per.dA,data);
+    const pct = total>0 ? Math.min(Math.max((toData/total)*100,0),100) : 0;
+    el.style.left = pct+'%'; el.style.display='block';
+  } else { el.style.display='none'; }
+}
+
+function renderResumo(){
+  const per = getPeriodoState();
+  const body = document.getElementById('resumoBody');
+  const items = selectedItems().filter(it=>{
+    const r = calcularItem(it, per);
+    return r.sugerida>=1 || r.semHistorico;
+  });
+  document.getElementById('resumoCount').textContent = `${items.length} itens para lançar`;
+  if(items.length===0){
+    body.innerHTML = `<tr class="empty-row"><td colspan="5">Nenhum item com quantidade sugerida ainda.</td></tr>`;
+    return;
+  }
+  body.innerHTML = items.map(it=>{
+    const r = calcularItem(it, per);
+    return `<tr><td><span class="status-badge ${r.status}"><span class="dot"></span>${r.label}</span></td>
+      <td class="name">${it.name}</td><td class="code">${it.code||'—'}</td>
+      <td class="result">${r.consumoMax}</td><td class="result">${r.sugerida}</td></tr>`;
+  }).join('');
+}
+
+function exportPedidoCSV(){
+  const per = getPeriodoState();
+  const rows = [['Status','Item','Código','CMM','A consumir','Estoque futuro','Segurança','Necessária','Programação','Sugerida','Excedente']];
+  selectedItems().forEach(it=>{
+    const r = calcularItem(it, per);
+    rows.push([r.label, it.name, it.code, r.cmm, r.aConsumir, r.futuro, r.seguranca, r.necessaria, r.programacao, r.sugerida, r.excedente]);
+  });
+  downloadCSV(rows, `pedido-ceaf-${hojeISO()}.csv`);
+}
+window.exportPedidoCSV = exportPedidoCSV;
+
+/* ---------------- Painel: Detalhamento completo ---------------- */
+function renderPainelDetail(){
+  const per = getPeriodoState();
+  const q = document.getElementById('painelDetailSearch').value.trim().toLowerCase();
+  const statusF = document.getElementById('painelDetailStatus').value;
+  const catF = document.getElementById('painelDetailCat').value;
+  const body = document.getElementById('painelDetailBody');
+  const items = selectedItems().filter(it=>{
+    if(q && !(it.name.toLowerCase().includes(q) || it.code.toLowerCase().includes(q))) return false;
+    if(catF && it.category!==catF) return false;
+    if(statusF && calcularItem(it, per).status!==statusF) return false;
+    return true;
+  });
+  if(items.length===0){
+    body.innerHTML = `<tr class="empty-row"><td colspan="8">Nenhum item para este recorte.</td></tr>`;
+    return;
+  }
+  body.innerHTML = items.map(it=>{
+    const r = calcularItem(it, per);
+    const consumoPaciente = it.consumoMedioPorPaciente!=null ? it.consumoMedioPorPaciente.toFixed(1) : '—';
+    return `<tr><td><span class="status-badge ${r.status}"><span class="dot"></span>${r.label}</span></td>
+      <td class="name">${it.name}</td><td class="code">${it.code||'—'}</td>
+      <td>${it.category==='termolabil'?'Termolábil':'Termoestável'}</td>
+      <td class="result">${r.cmm}</td><td class="result">${consumoPaciente}</td><td class="result">${r.necessaria}</td><td class="result">${r.sugerida}</td></tr>`;
+  }).join('');
+}
+window.renderPainelDetail = renderPainelDetail;
+
+function exportPainelDetailCSV(){
+  const per = getPeriodoState();
+  const q = document.getElementById('painelDetailSearch').value.trim().toLowerCase();
+  const statusF = document.getElementById('painelDetailStatus').value;
+  const catF = document.getElementById('painelDetailCat').value;
+  const rows = [['Status','Item','Código','Categoria','CMM','Consumo médio/paciente','Necessária','Sugerida']];
+  selectedItems().filter(it=>{
+    if(q && !(it.name.toLowerCase().includes(q) || it.code.toLowerCase().includes(q))) return false;
+    if(catF && it.category!==catF) return false;
+    if(statusF && calcularItem(it, per).status!==statusF) return false;
+    return true;
+  }).forEach(it=>{
+    const r = calcularItem(it, per);
+    rows.push([r.label, it.name, it.code, it.category==='termolabil'?'Termolábil':'Termoestável', r.cmm, it.consumoMedioPorPaciente!=null?it.consumoMedioPorPaciente.toFixed(2):'', r.necessaria, r.sugerida]);
+  });
+  downloadCSV(rows, `painel-detalhamento-${hojeISO()}.csv`);
+}
+window.exportPainelDetailCSV = exportPainelDetailCSV;
+
+/* ---------------- Utilitários de exportação ---------------- */
+function escapeCSV(v){
+  const s = String(v===undefined||v===null?'':v);
+  if(/[;"\n\r]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+function downloadCSV(rows, filename){
+  const csv = rows.map(r=> r.map(escapeCSV).join(';')).join('\r\n');
+  downloadBlob(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}), filename);
+}
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------------- Backup / restauração ---------------- */
+function collectState(){
+  return {
+    v:1, savedAt: Date.now(),
+    estabCnes: document.getElementById('estabCnes').value,
+    estabNome: document.getElementById('estabNome').value,
+    estabResponsavel: document.getElementById('estabResponsavel').value,
+    estabEmail: document.getElementById('estabEmail').value,
+    dataAnalise: document.getElementById('dataAnalise').value,
+    dataInicio: document.getElementById('dataInicio').value,
+    dataFim: document.getElementById('dataFim').value,
+    dataEntregaFrio: document.getElementById('dataEntregaFrio').value,
+    dataEntregaAmb: document.getElementById('dataEntregaAmb').value,
+    items: ITEMS.map(it=>({key:it.key,selecionado:it.selecionado,consumoM1:it.consumoM1,consumoM2:it.consumoM2,
+      consumoM3:it.consumoM3,estoque:it.estoque,reservado:it.reservado,vencimento:it.vencimento,receber:it.receber,
+      margem:it.margem,ruptura:it.ruptura,rupturaDesde:it.rupturaDesde,manualOverride:it.manualOverride,programacaoManual:it.programacaoManual,fe:it.fe,
+      ajustadoPor:it.ajustadoPor,ajustadoEm:it.ajustadoEm,
+      pacientesAgendados:it.pacientesAgendados,pacientesAtendidosEstoque:it.pacientesAtendidosEstoque,
+      pacientesAtendidosMedia:it.pacientesAtendidosMedia,consumoMedioPorPaciente:it.consumoMedioPorPaciente,
+      medicamentosDispensadosMes:it.medicamentosDispensadosMes,indicadoresAtualizadosEm:it.indicadoresAtualizadosEm})),
+    importLog: importLog,
+    fornecimentoMunicipio: fornecimentoMunicipio,
+    fornecimentoMunicipioMes: fornecimentoMunicipioMes
+  };
+}
+function applyState(state){
+  if(!state) return;
+  const setVal=(id,v)=>{ if(v!==undefined) document.getElementById(id).value = v; };
+  setVal('estabCnes',state.estabCnes); setVal('estabNome',state.estabNome);
+  setVal('estabResponsavel',state.estabResponsavel); setVal('estabEmail',state.estabEmail);
+  document.getElementById('dataAnalise').value = hojeISO();
+  setVal('dataInicio',state.dataInicio); setVal('dataFim',state.dataFim);
+  setVal('dataEntregaFrio',state.dataEntregaFrio); setVal('dataEntregaAmb',state.dataEntregaAmb);
+  (state.items||[]).forEach(s=>{
+    const it = itemsByKey[s.key]; if(!it) return;
+    Object.assign(it, s);
+  });
+  importLog = Array.isArray(state.importLog) ? state.importLog : [];
+  fornecimentoMunicipio = Array.isArray(state.fornecimentoMunicipio) ? state.fornecimentoMunicipio : [];
+  fornecimentoMunicipioMes = state.fornecimentoMunicipioMes || null;
+  renderAll();
+}
+function exportBackup(){
+  clearTimeout(autosaveTimer);
+  const state = collectState();
+  downloadBlob(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}), `backup-almoxarifado-farmaceutico-${hojeISO()}.json`);
+  doSave();
+}
+window.exportBackup = exportBackup;
+
+/* ----------------------------------------------------------------------
+   EXPORTAÇÃO NO MODELO "MEDICAMENTOS EM FALTA — CONSOLIDADO"
+   Reproduz a estrutura de uma planilha de acompanhamento de desabastecimento
+   fornecida como referência: aba única "Consolidado", uma linha por
+   medicamento, uma coluna por mês (Jan a Dez) e uma coluna de Total anual.
+   O sistema só guarda o status atual de ruptura, não o histórico dia a dia —
+   por isso só o mês da data de análise vigente é preenchido (ver aviso na
+   própria aba Exportações).
+   ---------------------------------------------------------------------- */
+function exportMedEmFaltaXLSX(){
+  if(typeof XLSX === 'undefined'){
+    alert('A biblioteca de geração de planilhas (.xlsx) não carregou — verifique a conexão e tente novamente.');
+    return;
+  }
+  const per = getPeriodoState();
+  const dataRef = per.dA || new Date();
+  const mesIdx = dataRef.getMonth(); // 0 = Janeiro
+  const nomesMeses = ['Jan','Fev','Mar','Abr','Maio','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const header = ['MEDICAMENTO', ...nomesMeses, 'Total'];
+  const linhas = [header];
+  ITEMS.forEach(it=>{
+    const meses = new Array(12).fill(0);
+    if(it.ruptura) meses[mesIdx] = 1;
+    const total = meses.reduce((a,b)=>a+b,0);
+    linhas.push([it.name, ...meses, total]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(linhas);
+  ws['!cols'] = [{wch:55}, ...nomesMeses.map(()=>({wch:6})), {wch:8}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Consolidado');
+  XLSX.writeFile(wb, `medicamentos-em-falta-consolidado-${hojeISO()}.xlsx`);
+}
+window.exportMedEmFaltaXLSX = exportMedEmFaltaXLSX;
+
+/* ----------------------------------------------------------------------
+   EXPORTAÇÃO "MEDICAMENTOS EM FALTA" EM PDF
+   Reproduz o layout de uma planilha de acompanhamento fornecida como
+   referência: título "Atualização", tabela com medicamento / dia de
+   entrada em falta / dias em falta (contados até a data de análise
+   vigente, ou hoje) / previsão de chegada, seguida de uma segunda seção
+   para itens suspensos temporariamente — categoria que este sistema não
+   distingue de ruptura, por isso sempre sai vazia — e um rodapé com a
+   data/hora da emissão.
+   ---------------------------------------------------------------------- */
+function exportMedEmFaltaPDF(){
+  if(typeof window.jspdf === 'undefined'){
+    alert('A biblioteca de geração de PDF não carregou — verifique a conexão e tente novamente.');
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const per = getPeriodoState();
+  const hoje = per.dA || new Date();
+
+  const emFalta = ITEMS.filter(it=> it.ruptura).sort((a,b)=> a.name.localeCompare(b.name,'pt-BR'));
+  const linhas = emFalta.map(it=>{
+    const desde = parseDate(it.rupturaDesde);
+    const dias = desde ? Math.max(daysBetween(desde, hoje),0) : '—';
+    let previsao = 'Sem Previsão';
+    if(it.receber>0){
+      const dataEntrega = it.category==='termolabil' ? per.dEFrio : per.dEAmb;
+      if(dataEntrega) previsao = fmtDate(dataEntrega);
+    }
+    return [it.name, desde?fmtDate(desde):'—', String(dias), previsao];
+  });
+
+  const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+  const pageWidth = doc.internal.pageSize.getWidth();
+  doc.setFontSize(10);
+  doc.setFont(undefined,'italic');
+  doc.text('Atualização', 14, 12);
+  doc.setFont(undefined,'normal');
+  doc.setFontSize(8);
+  doc.text(`Dias em falta contados até ${fmtDate(hoje)}`, 14, 17);
+
+  doc.autoTable({
+    startY: 21,
+    head: [['Medicamento em falta','Dia entrada em falta','Dias em falta','Previsão chegada']],
+    body: linhas.length ? linhas : [['Nenhum item em ruptura no momento.','','','']],
+    styles:{fontSize:8, cellPadding:1.6, overflow:'linebreak'},
+    headStyles:{fillColor:[79,169,138], textColor:255, fontStyle:'bold'},
+    columnStyles:{1:{cellWidth:32}, 2:{cellWidth:24}, 3:{cellWidth:32}},
+    margin:{left:14,right:14}
+  });
+
+  let y = doc.lastAutoTable.finalY + 10;
+  if(y > doc.internal.pageSize.getHeight() - 30){ doc.addPage(); y = 16; }
+  doc.setFontSize(10);
+  doc.setFont(undefined,'italic');
+  doc.text('Medicamento suspenso temporário', 14, y);
+  doc.setFont(undefined,'normal');
+  doc.autoTable({
+    startY: y+4,
+    head: [['Medicamento suspenso','Dia entrada em falta','Dias em falta','Previsão chegada']],
+    body: [],
+    styles:{fontSize:8, cellPadding:1.6, overflow:'linebreak'},
+    headStyles:{fillColor:[185,133,46], textColor:255, fontStyle:'bold'},
+    columnStyles:{1:{cellWidth:32}, 2:{cellWidth:24}, 3:{cellWidth:32}},
+    margin:{left:14,right:14}
+  });
+  doc.setFontSize(7.5);
+  doc.text('Este sistema registra apenas "em ruptura" — a categoria "suspenso temporário" não existe aqui, por isso a tabela acima sempre vem vazia.', 14, doc.lastAutoTable.finalY+6);
+
+  doc.setFontSize(8);
+  doc.text(new Date().toLocaleString('pt-BR'), 14, doc.internal.pageSize.getHeight()-8);
+
+  doc.save(`medicamentos-em-falta-${hojeISO()}.pdf`);
+}
+window.exportMedEmFaltaPDF = exportMedEmFaltaPDF;
+
+
+
+document.getElementById('inputImportBackup').addEventListener('change', function(){
+  const file = this.files && this.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let state=null;
+    try{ state = JSON.parse(reader.result); } catch(e){ alert('Arquivo inválido.'); return; }
+    if(!state || !Array.isArray(state.items)){ alert('Este arquivo não parece um backup válido deste sistema.'); return; }
+    if(!confirm('Importar este backup? Isso substitui os dados de programação preenchidos atualmente.')) return;
+    applyState(state); doSave();
+  };
+  reader.readAsText(file,'UTF-8');
+});
+
+function restaurarCatalogoPadrao(){
+  if(!confirm('Isso reseta todos os dados de programação (consumo, estoque, seleção) de todos os itens. O catálogo em si (315 itens) já é o padrão. Continuar?')) return;
+  ITEMS.forEach((it,idx)=> Object.assign(it, buildItem(RAW_CATALOG[idx], idx)));
+  fornecimentoMunicipio = []; fornecimentoMunicipioMes = null;
+  renderAll(); doSave();
+}
+window.restaurarCatalogoPadrao = restaurarCatalogoPadrao;
+function limparProgramacao(){ restaurarCatalogoPadrao(); }
+window.limparProgramacao = limparProgramacao;
+
+function descartarRascunho(){
+  if(!confirm('Descartar o rascunho salvo e começar do zero?')) return;
+  try{ localStorage.removeItem(AUTOSAVE_KEY); }catch(e){}
+  location.reload();
+}
+window.descartarRascunho = descartarRascunho;
+
+/* ---------------- Autosave ---------------- */
+function storageAvailable(){
+  try{ const t='__t__'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }catch(e){ return false; }
+}
+const AUTOSAVE_SUPPORTED = storageAvailable();
+function setAutosaveText(msg){
+  ['autosaveText','autosaveTextPedido'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = msg; });
+}
+function doSave(){
+  if(!AUTOSAVE_SUPPORTED) return;
+  try{
+    const state = collectState();
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+    setAutosaveText('Salvo automaticamente às ' + new Date(state.savedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
+  }catch(e){ setAutosaveText('Não foi possível salvar automaticamente agora.'); }
+}
+function scheduleAutosave(){
+  if(!autosaveEnabled || !AUTOSAVE_SUPPORTED) return;
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(doSave, AUTOSAVE_DELAY);
+}
+['autosaveToggle','autosaveTogglePedido'].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener('change', function(){
+    autosaveEnabled = this.checked;
+    document.getElementById('autosaveToggle').checked = autosaveEnabled;
+    document.getElementById('autosaveTogglePedido').checked = autosaveEnabled;
+    if(autosaveEnabled){ setAutosaveText('Salvamento automático ativado'); doSave(); }
+    else { clearTimeout(autosaveTimer); setAutosaveText('Salvamento automático desativado'); }
+  });
+});
+
+function renderAll(){
+  renderDashboard(); renderItemsTable(); renderPedidoTudo(); renderImportLog();
+}
+
+/* ---------------- Listeners globais de campos ---------------- */
+['estabCnes','estabNome','estabResponsavel','estabEmail','dataAnalise','dataInicio','dataFim','dataEntregaFrio','dataEntregaAmb']
+  .forEach(id=> document.getElementById(id).addEventListener('input', ()=>{ renderAll(); scheduleAutosave(); }));
+
+/* ---------------- Tooltips (.hint) — únicos para todo o sistema ---------------- */
+(function initTooltips(){
+  const tip = document.getElementById('jsTooltip');
+  function show(el){
+    const text = el.getAttribute('data-tip'); if(!text) return;
+    tip.textContent = text; tip.style.display='block'; tip.style.left='-9999px'; tip.style.top='-9999px';
+    const rect = el.getBoundingClientRect(); const tipRect = tip.getBoundingClientRect();
+    let left = rect.left + rect.width/2 - tipRect.width/2;
+    left = Math.max(8, Math.min(left, window.innerWidth - tipRect.width - 8));
+    let top = rect.bottom + 8;
+    if(top + tipRect.height > window.innerHeight - 8) top = rect.top - tipRect.height - 8;
+    tip.style.left = left+'px'; tip.style.top = top+'px';
+  }
+  function hide(){ tip.style.display='none'; }
+  document.addEventListener('mouseover', e=>{ const h=e.target.closest && e.target.closest('.hint'); if(h) show(h); });
+  document.addEventListener('mouseout', e=>{ const h=e.target.closest && e.target.closest('.hint'); if(h) hide(); });
+  document.addEventListener('focusin', e=>{ const h=e.target.closest && e.target.closest('.hint'); if(h) show(h); });
+  document.addEventListener('focusout', e=>{ const h=e.target.closest && e.target.closest('.hint'); if(h) hide(); });
+  window.addEventListener('scroll', hide, true);
+})();
+
+/* ---------------- Inicialização ---------------- */
+function init(){
+  document.getElementById('dataAnalise').value = hojeISO();
+  document.getElementById('dataInicio').value = hojeISO();
+  document.getElementById('dataFim').value = ultimoDiaMesSeguinteISO();
+  try{
+    const nomeUsuario = localStorage.getItem('usuarioAtualNome_v1');
+    if(nomeUsuario) document.getElementById('usuarioAtualNome').value = nomeUsuario;
+  }catch(e){}
+  document.getElementById('usuarioAtualNome').addEventListener('input', function(){
+    try{ localStorage.setItem('usuarioAtualNome_v1', this.value); }catch(e){}
+  });
+  if(AUTOSAVE_SUPPORTED){
+    try{
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if(raw){
+        const saved = JSON.parse(raw);
+        const temConteudo = saved && ((saved.items||[]).some(i=>i.selecionado) || saved.dataInicio || saved.dataFim);
+        if(temConteudo){
+          applyState(saved);
+          const banner = document.getElementById('draftBanner');
+          const info = document.getElementById('draftBannerInfo');
+          const n = (saved.items||[]).filter(i=>i.selecionado).length;
+          info.textContent = `Salvo em ${new Date(saved.savedAt).toLocaleString('pt-BR')} — ${n} ${n===1?'item selecionado':'itens selecionados'}.`;
+          banner.style.display='flex';
+        }
+      }
+    }catch(e){}
+  } else {
+    autosaveEnabled = false;
+    document.getElementById('autosaveToggle').disabled = true;
+    document.getElementById('autosaveTogglePedido').disabled = true;
+    setAutosaveText('Salvamento automático indisponível neste navegador.');
+  }
+  renderAll();
+}
+init();
+
+})();
+</script>
+
+</body>
+</html>
